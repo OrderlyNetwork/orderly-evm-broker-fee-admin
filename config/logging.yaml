@@ -1,0 +1,25 @@
+version: 1
+formatters:
+  simple:
+    format: "%(asctime)s - %(name)s - %(filename)s - Line:%(lineno)d - %(levelname)s - %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.handlers.TimedRotatingFileHandler
+    level: INFO
+    formatter: simple
+    filename: data/logs/app.log
+    when: midnight
+    interval: 1
+    backupCount: 7
+
+root:
+  level: INFO
+  handlers: [console, file]
+

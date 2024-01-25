@@ -1,0 +1,8 @@
+pandas
+requests
+web3
+eth_account
+pycryptodome
+cryptography
+APScheduler
+PyYAML

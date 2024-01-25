@@ -1,0 +1,41 @@
+common:
+  account_id: '0x...'
+  api_key: ed25519:...
+  api_secret: ed25519:...j
+  orderly_endpoint: https://api-evm.orderly.network
+  statistical_days: 30
+rate:
+  fee_tier:
+  - maker_fee: 0.03%
+    taker_fee: 0.06%
+    tier: '1'
+    volume_max: 500000
+    volume_min: 0
+  - maker_fee: 0.024%
+    taker_fee: 0.054%
+    tier: '2'
+    volume_max: 2500000
+    volume_min: 500000
+  - maker_fee: 0.018%
+    taker_fee: 0.048%
+    tier: '3'
+    volume_max: 10000000
+    volume_min: 2500000
+  - maker_fee: 0.012%
+    taker_fee: 0.042%
+    tier: '4'
+    volume_max: 100000000
+    volume_min: 10000000
+  - maker_fee: 0.006%
+    taker_fee: 0.036%
+    tier: '5'
+    volume_max: 250000000
+    volume_min: 100000000
+  - maker_fee: 0%
+    taker_fee: 0.03%
+    tier: '6'
+    volume_max: null
+    volume_min: 250000000
+  special_rate_whitelists:
+  - '0x'
+  startup_batch_update_fee: true
