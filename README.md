@@ -177,7 +177,7 @@ python3 app/main.py update-broker-default-fee 0.001 0.006
 8. How to add a special user fixed rate (after it is added successfully, its rate will not be updated regularly based on  volume)?
 ```python 
 python3 app/main.py update-user-special-rate 0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741378d3b7 0.0001 0.0003
-添加成功后，会将固定费率配置用户account_id记录到配置文件config/broker.yaml
+After the fixed rate configuration user account_id is added, the user account_id is recorded in the configuration file config/broker.yaml
 rate:
   special_rate_whitelists:
   - '0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741378d3b7'
