@@ -100,7 +100,9 @@ python3 app/main.py update-user-rate-base-volume
 ```
 ## FAQ
 1. What permissions can users use to update broker default rates and their user rates?
-Only the Broker Admin account has permission to make changes. It is a special account that the broker needs to contact the business team and the Orderly authorizes this account
+
+Only the Broker Admin account has permission to make changes. It is a special account that the broker needs to contact the business team and the Orderly authorizes this account.
+
 2. What can the Broker Admin account do?
     - Query the current rates for all Broker users
     - Update broker's default rate configuration
@@ -113,7 +115,9 @@ Only the Broker Admin account has permission to make changes. It is a special ac
     - Execute instructions to add special user fixed rates
 
 4. What is special user fixed rate configuration?
+
 After configuring the special user fixed rate configuration, when the scheduled task updates the user rate configuration based on the 30-day transaction volume every day, this part of the users will not be adjusted.
+
 For the whitelist list of special users (check the broker.yaml configuration file), please refer to the following example:
 ```yaml
 rate:
@@ -177,22 +181,29 @@ python3 app/main.py update-broker-default-fee 0.001 0.006
 8. How to add a special user fixed rate (after it is added successfully, its rate will not be updated regularly based on  volume)?
 ```python 
 python3 app/main.py update-user-special-rate 0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741378d3b7 0.0001 0.0003
+
 After the fixed rate configuration user account_id is added, the user account_id is recorded in the configuration file config/broker.yaml
+
 rate:
   special_rate_whitelists:
   - '0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741378d3b7'
 ```
 
 9. How to delete the special user fixed fee (after successful deletion, its rate will not be updated regularly based on  volume)?
+
 Update the config/broker.yaml configuration file and delete the corresponding account_id in special_rate_whitelists.
+
 ```yaml
 rate:
   special_rate_whitelists:
   - '0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741378d3b7'
 ```
 10. How to automatically update the user fee rate of the broker based on the volume?
-It is recommended to run this task no less than 00:10 UTC every day (this logic has been executed at UTC 00:10 by default), and the update scope does not include fixed rate users (special_rate_whitelists)
-Default startup_batch_update_fee: True, this logic will be executed first when the service starts
+
+It is recommended to run this task no less than 00:10 UTC every day (this logic has been executed at UTC 00:10 by default), and the update scope does not include fixed rate users (special_rate_whitelists).
+
+Default startup_batch_update_fee: True, this logic will be executed first when the service start.
+
 ```python
 python3 app/main.py update-user-rate-base-volume
 ```
