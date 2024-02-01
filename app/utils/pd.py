@@ -3,6 +3,7 @@ import json, os
 from utils.util import get_now_datetime
 from decimal import Decimal
 
+
 class PandasCSVHandler:
     def __init__(self, _type="data/data/broker_fee.csv"):
         self._type = _type
@@ -13,6 +14,11 @@ class PandasCSVHandler:
         self.read_csv()
 
     def read_csv(self):
+
+        fee_dir = os.path.dirname(self.filename)
+        if not os.path.exists(fee_dir):
+            os.makedirs(fee_dir)
+
         if not os.path.exists(self.filename):
             if self._type == "broker_user_fee":
                 headers = [

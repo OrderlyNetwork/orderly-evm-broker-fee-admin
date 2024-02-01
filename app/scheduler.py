@@ -14,7 +14,9 @@ def handle_signal(signum, frame):
 
 def run():
     try:
-        scheduler.add_job(fee.update_rate_base_volume, trigger='cron', hour='00', minute='10')
+        scheduler.add_job(
+            fee.update_rate_base_volume, trigger="cron", hour="00", minute="10"
+        )
         scheduler.start()
         signal.signal(signal.SIGINT, handle_signal)
         signal.signal(signal.SIGTERM, handle_signal)

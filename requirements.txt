@@ -6,3 +6,4 @@ pycryptodome
 cryptography
 APScheduler
 PyYAML
+base58

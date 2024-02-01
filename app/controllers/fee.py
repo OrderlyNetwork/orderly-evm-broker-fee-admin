@@ -27,6 +27,7 @@ def init_broker_fees():
             break
         if data:
             for _data in data["data"]["rows"]:
+                print(_data)
                 broker_fee.create_update_user_fee_data(_data, delete_flag=True)
         _count += 1
         time.sleep(2)
