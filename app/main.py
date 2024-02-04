@@ -13,7 +13,6 @@ from utils.myconfig import ConfigLoader
 config = ConfigLoader.load_config()
 logger = setup_logging()
 
-
 def show_help():
     help_text = """
     Help Information(Option,Parameters):
@@ -28,8 +27,8 @@ def show_help():
 
 
 if __name__ == "__main__":
-    args = sys.argv[1:]  # Exclude script name, keep only arguments
-
+    
+    args = sys.argv[1:]
     if len(args) == 0:
         show_help()
     elif args[0] == "update-broker-default-fee" and len(args) == 3:

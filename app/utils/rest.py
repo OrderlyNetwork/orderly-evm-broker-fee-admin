@@ -48,7 +48,6 @@ def generate_wallet_signature(wallet_secret, message=None):
     )
     return signed_message.signature.hex()
 
-
 def _request(http_method, url_path, payload=None):
     if payload:
         _payload = cleanNoneValue(payload)
@@ -69,9 +68,9 @@ def _request(http_method, url_path, payload=None):
         }
     )
     response = _dispatch_request(http_method, params)
-    # logger.info(
-    #     f"raw response from server: {response.text}, elapsed_time: {response.elapsed.total_seconds()}s"
-    # )
+    logger.info(
+        f"raw response from server: {response.text}, elapsed_time: {response.elapsed.total_seconds()}s"
+    )
     try:
         data = response.json()
     except ValueError:
@@ -120,9 +119,9 @@ def send_request(http_method, url_path, payload=None):
     url = orderly_endpoint + url_path
     params = cleanNoneValue({"url": url, "params": payload})
     response = _dispatch_request(http_method, params)
-    # logger.info(
-    #     f"raw response from server: {response.text}, elapsed_time: {response.elapsed.total_seconds()}s"
-    # )
+    logger.info(
+        f"raw response from server: {response.text}, elapsed_time: {response.elapsed.total_seconds()}s"
+    )
     _handle_rest_exception(response)
 
     try:
