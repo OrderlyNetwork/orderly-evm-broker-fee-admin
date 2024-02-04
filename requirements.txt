@@ -4,6 +4,7 @@ web3
 eth_account
 pycryptodome
 cryptography
-APScheduler
+apscheduler
 PyYAML
 base58
+pytest-shutil
