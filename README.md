@@ -11,8 +11,8 @@ Main functions:
 - Automatically update the latest rates based on user's volumes
 - Configure special rates for users
 
+# Manual Installation
 ## Installation
-
 ```bash
 pip install -r requirements.txt
 ```
@@ -27,7 +27,11 @@ pip install -r requirements.txt
 - startup_batch_update_fee: True: The user rate is automatically updated when the service is started, otherwise it is periodically executed every day
 
 Usage examples:
+```
+cp config/broker.yaml.example data/config/broker.yaml
+```
 ```yaml
+
 common:
   account_id: '0x...'
   api_key: ed25519:...
@@ -97,6 +101,20 @@ python3 app/main.py update-user-special-rate 0x918ce3f57ce4b2a3920d4a81c772f8a26
 ```shell 
 #Every day at 00:10
 python3 app/main.py update-user-rate-base-volume
+```
+## Container deployment
+
+1. Clone Codes
+```
+git clone git@github.com:OrderlyNetwork/orderly-evm-broker-fee-admin.git
+```
+2. Build a local image
+```
+cd orderly-evm-broker-fee-admin
+docker  build . -t broker_fee_admin:latest
+
+docker run  --name broker_fee_admin -d -it -v /local/directory/data:/data/data broke
+r_fee_admin:latest
 ```
 ## FAQ
 1. What permissions can users use to update broker default rates and their user rates?
