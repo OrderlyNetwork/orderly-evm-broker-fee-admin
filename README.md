@@ -112,9 +112,16 @@ git clone git@github.com:OrderlyNetwork/orderly-evm-broker-fee-admin.git
 ```
 cd orderly-evm-broker-fee-admin
 docker  build . -t broker_fee_admin:latest
-
-docker run  --name broker_fee_admin -d -it -v /local/directory/data:/data/data broke
-r_fee_admin:latest
+docker run  --name broker_fee_admin -d -it -v /local/directory/data:/data/data broker_fee_admin:latest
+```
+After the container is created, the data, config, and logs directories are created in the /local/directory/data directory. Please first configure `data/config/broker.yaml`.
+3. Start the container
+```
+docker start broker_fee_admin
+```
+4. Others
+```
+Data persistence is located in the /local/directory/data directory.To run the command manually, you need to enter the container.
 ```
 ## FAQ
 1. What permissions can users use to update broker default rates and their user rates?
