@@ -98,34 +98,39 @@ def set_broker_user_fee(_data):
             maker_fee_rate = Decimal(_fk.split(":")[0])
             taker_fee_rate = Decimal(_fk.split(":")[1])
             account_ids = _fv
-            _payload = {
-                "account_ids": account_ids,
-                "maker_fee_rate": str(maker_fee_rate),
-                "taker_fee_rate": str(taker_fee_rate),
-            }
-            try:
-                if (
-                    maker_fee_rate == _tier1_maker_fee
-                    or taker_fee_rate == _tier1_taker_fee
-                ):
-                    _reset_fee = reset_user_fee_default(account_ids)
-                    if not _reset_fee["success"]:
-                        logger.error(
-                            f"Failed to reset user rates account_ ids - {account_ids}"
-                        )
-                _update_fee = _sign_request(
-                    "POST", "/v1/broker/fee_rate/set", payload=_payload
-                )
-                if _update_fee["success"] == True:
-                    _ok_count += len(account_ids)
-                else:
-                    _fail_count += len(account_ids)
-            except Exception as e:
-                _fail_count += len(account_ids)
-                logger.error(
-                    f"Set Broker User's Fee Failed: {_fk} - {_payload} - {str(e)} "
-                )
-            time.sleep(2)
+
+            batch_size = 500
+            
+            for i in range(0, len(account_ids), batch_size):
+                batch_ids = account_ids[i:i+batch_size]
+                _payload = {
+                    "account_ids": batch_ids,
+                    "maker_fee_rate": str(maker_fee_rate),
+                    "taker_fee_rate": str(taker_fee_rate),
+                }
+                try:
+                    if (
+                        maker_fee_rate == _tier1_maker_fee
+                        or taker_fee_rate == _tier1_taker_fee
+                    ):
+                        _reset_fee = reset_user_fee_default(batch_ids)
+                        if not _reset_fee["success"]:
+                            logger.error(
+                                f"Failed to reset user rates account_ ids - {batch_ids}"
+                            )
+                    _update_fee = _sign_request(
+                        "POST", "/v1/broker/fee_rate/set", payload=_payload
+                    )
+                    if _update_fee["success"] == True:
+                        _ok_count += len(batch_ids)
+                    else:
+                        _fail_count += len(batch_ids)
+                except Exception as e:
+                    _fail_count += len(batch_ids)
+                    logger.error(
+                        f"Set Broker User's Fee Failed: {_fk} - {_payload} - {str(e)} "
+                    )
+                time.sleep(2)
         logger.info(
             f"Set Broker User's Status - success: {_ok_count}, failed: {_fail_count}"
         )
