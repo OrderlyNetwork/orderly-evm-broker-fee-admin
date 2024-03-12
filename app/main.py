@@ -2,11 +2,10 @@ import sys
 
 import scheduler
 from controllers.fee import (
-    init_broker_fees,
     fetch_broker_default_rate,
     update_broker_default_fee,
     update_user_special_rate,
-    update_user_rate_base_volume,
+    update_rate_base_volume,
 )
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
@@ -43,8 +42,7 @@ if __name__ == "__main__":
             logger.info(
                 "For the first time, the broker user rate is updated based on the yaml configuration startup_batch_update_fee: true"
             )
-            init_broker_fees()
-            update_user_rate_base_volume()
+            update_rate_base_volume()
         scheduler.run()
     else:
         logger.info("Invalid arguments.")

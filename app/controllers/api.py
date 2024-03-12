@@ -1,3 +1,6 @@
+import time
+from decimal import Decimal
+
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
 from utils.rest import sign_request
@@ -5,8 +8,6 @@ from utils.util import get_report_days
 
 logger = setup_logging()
 config = ConfigLoader.load_config()
-import time
-from decimal import Decimal
 
 
 def get_broker_users_fees(count=1):
