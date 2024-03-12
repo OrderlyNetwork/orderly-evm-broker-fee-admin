@@ -1,7 +1,7 @@
-from utils.mylogging import setup_logging
 from utils.myconfig import ConfigLoader
+from utils.mylogging import setup_logging
+from utils.rest import sign_request
 from utils.util import get_report_days
-from utils.rest import _request, _sign_request
 
 logger = setup_logging()
 config = ConfigLoader.load_config()
@@ -12,7 +12,7 @@ from decimal import Decimal
 def get_broker_users_fees(count=1):
     url = f"/v1/broker/user_info?page={count}&size=500"
     try:
-        data = _sign_request("GET", f"{url}")
+        data = sign_request("GET", f"{url}")
     except Exception as e:
         data = None
         logger.error(f"Get Broker User's Fee URL Failed: {url} - {e}")
@@ -22,7 +22,7 @@ def get_broker_users_fees(count=1):
 def get_broker_default_rate():
     url = "/v1/broker/fee_rate/default"
     try:
-        data = _sign_request("GET", f"{url}")
+        data = sign_request("GET", f"{url}")
     except Exception as e:
         data = None
         logger.error(f"Get Broker Default Fee URL Failed: {url} - {e}")
@@ -33,7 +33,7 @@ def set_broker_default_rate(maker_fee_rate, taker_fee_rate):
     url = "/v1/broker/fee_rate/default"
     _payload = {"maker_fee_rate": maker_fee_rate, "taker_fee_rate": taker_fee_rate}
     try:
-        _post_data = _sign_request("POST", f"{url}", payload=_payload)
+        _post_data = sign_request("POST", f"{url}", payload=_payload)
     except Exception as e:
         logger.error(f"Get Broker Default Fee URL Failed: {url} - {e}")
     return
@@ -49,13 +49,13 @@ def get_broker_users_volumes(count):
         "page": count,
         "aggregateBy": "account",
     }
-    _volumes = _sign_request("GET", "/v1/volume/broker/daily", payload=_payload)
+    _volumes = sign_request("GET", "/v1/volume/broker/daily", payload=_payload)
     return _volumes
 
 
 def get_tier(volume):
     _tiers = config["rate"]["fee_tier"]
-    tier_found = None
+    # tier_found = None
     for tier in _tiers:
         if tier["volume_min"] <= volume and (
             tier["volume_max"] is None or volume < tier["volume_max"]
@@ -72,7 +72,7 @@ def get_tier(volume):
 
 def reset_user_fee_default(account_ids):
     _payload = {"account_ids": account_ids}
-    _reset_fee = _sign_request(
+    _reset_fee = sign_request(
         "POST", "/v1/broker/fee_rate/set_default", payload=_payload
     )
     return _reset_fee
@@ -99,7 +99,7 @@ def set_broker_user_fee(_data):
             taker_fee_rate = Decimal(_fk.split(":")[1])
             account_ids = _fv
 
-            batch_size = 500
+            batch_size = 100
             
             for i in range(0, len(account_ids), batch_size):
                 batch_ids = account_ids[i:i+batch_size]
@@ -118,7 +118,7 @@ def set_broker_user_fee(_data):
                             logger.error(
                                 f"Failed to reset user rates account_ ids - {batch_ids}"
                             )
-                    _update_fee = _sign_request(
+                    _update_fee = sign_request(
                         "POST", "/v1/broker/fee_rate/set", payload=_payload
                     )
                     if _update_fee["success"] == True:

@@ -1,7 +1,10 @@
-from apscheduler.schedulers.background import BackgroundScheduler
 import signal
-from utils.mylogging import setup_logging
+import traceback
+
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from controllers import fee
+from utils.mylogging import setup_logging
 
 logger = setup_logging()
 
@@ -16,14 +19,15 @@ def run():
     try:
         logger.info("update-user-rate-base-volume task startup")
         scheduler.add_job(
-            fee.update_rate_base_volume, trigger="cron", hour="00", minute="10"
+            fee.update_rate_base_volume, trigger="cron", hour="01", minute="00"
         )
         scheduler.start()
         signal.signal(signal.SIGINT, handle_signal)
         signal.signal(signal.SIGTERM, handle_signal)
         signal.pause()
     except Exception as e:
-        logger.error(f"An error ocurred:{e}")
+        logger.error(f"An error occurred: {e}")
+        logger.error(traceback.format_exc())
 
 
 if __name__ == "__main__":

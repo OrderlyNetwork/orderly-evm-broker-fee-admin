@@ -1,6 +1,7 @@
 import logging.config
-import yaml
 import os
+
+import yaml
 
 CONFIG_PATH = "config"
 CONFIG_FILE = "logging.yaml"

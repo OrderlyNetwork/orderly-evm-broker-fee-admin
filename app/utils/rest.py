@@ -1,14 +1,17 @@
+import base64
+import decimal
 import json
 from json import JSONDecodeError
+
+import base58
 import requests
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from eth_account.messages import encode_structured_data
 from web3 import Web3
-import base58, base64
-from utils.util import get_timestamp, cleanNoneValue, ClientError, ServerError
+
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
-import decimal
+from utils.util import get_timestamp, clean_none_value, ClientError, ServerError
 
 logger = setup_logging()
 
@@ -48,9 +51,10 @@ def generate_wallet_signature(wallet_secret, message=None):
     )
     return signed_message.signature.hex()
 
+
 def _request(http_method, url_path, payload=None):
     if payload:
-        _payload = cleanNoneValue(payload)
+        _payload = clean_none_value(payload)
         if _payload:
             if http_method == "GET" or http_method == "DELETE":
                 url_path += "?" + "&".join([f"{k}={v}" for k, v in _payload.items()])
@@ -61,7 +65,7 @@ def _request(http_method, url_path, payload=None):
     if payload is None:
         payload = ""
     url = config["common"]["orderly_endpoint"] + url_path
-    params = cleanNoneValue(
+    params = clean_none_value(
         {
             "url": url,
             "params": payload,
@@ -79,14 +83,10 @@ def _request(http_method, url_path, payload=None):
     return data
 
 
-def get_wallet_signature(message=None):
-    return generate_wallet_signature(wallet_secret, message=message)
-
-
-def _sign_request(http_method, url_path, payload=None):
+def sign_request(http_method, url_path, payload=None):
     _payload = ""
     if payload:
-        _payload = cleanNoneValue(payload)
+        _payload = clean_none_value(payload)
         if _payload:
             if http_method == "GET" or http_method == "DELETE":
                 url_path += "?" + "&".join([f"{k}={v}" for k, v in _payload.items()])
@@ -117,7 +117,7 @@ def send_request(http_method, url_path, payload=None):
     if payload is None:
         payload = {}
     url = orderly_endpoint + url_path
-    params = cleanNoneValue({"url": url, "params": payload})
+    params = clean_none_value({"url": url, "params": payload})
     response = _dispatch_request(http_method, params)
     logger.info(
         f"raw response from server: {response.text}, elapsed_time: {response.elapsed.total_seconds()}s"
@@ -161,13 +161,13 @@ def _dispatch_request(http_method, params):
 def _handle_rest_exception(response):
     status_code = response.status_code
     if status_code < 400:
-        return
+        return None
     if 400 <= status_code < 500:
+        error_data = None
         try:
             err = json.loads(response.text)
         except JSONDecodeError:
-            raise ClientError(status_code, None, response.text, None, response.headers)
-        error_data = None
+            raise ClientError(status_code, None, response.text, response.headers, error_data)
         if "data" in err:
             error_data = err["data"]
         raise ClientError(

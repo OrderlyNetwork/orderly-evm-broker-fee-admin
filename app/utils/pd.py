@@ -1,7 +1,9 @@
+import json
+import os
+
 import pandas as pd
-import json, os
+
 from utils.util import get_now_datetime
-from decimal import Decimal
 
 
 class PandasCSVHandler:
@@ -14,7 +16,6 @@ class PandasCSVHandler:
         self.read_csv()
 
     def read_csv(self):
-
         fee_dir = os.path.dirname(self.filename)
         if not os.path.exists(fee_dir):
             os.makedirs(fee_dir)

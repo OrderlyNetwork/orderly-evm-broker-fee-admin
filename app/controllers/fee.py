@@ -1,17 +1,17 @@
 import time
+from decimal import Decimal
+
 from controllers.api import (
     get_broker_users_fees,
+    get_broker_default_rate,
     set_broker_default_rate,
     get_broker_users_volumes,
-    get_broker_default_rate,
     get_tier,
     set_broker_user_fee,
 )
-from utils.mylogging import setup_logging
 from utils.myconfig import ConfigLoader
-import scheduler
+from utils.mylogging import setup_logging
 from utils.pd import BrokerFee
-from decimal import Decimal, getcontext
 
 logger = setup_logging()
 config = ConfigLoader.load_config()
@@ -39,12 +39,11 @@ def fetch_broker_default_rate():
 
 def update_broker_default_fee(maker_fee, taker_fee):
     url = "/v1/broker/fee_rate/default"
-    data = None
     try:
         _data = get_broker_default_rate()
         if _data:
             logger.info(
-                f"Modifying Broker Default Fees:  Maker Fee {_data['data']['maker_fee_rate']}->{maker_fee},Taker Fee {_data['data']['taker_fee_rate']}->{taker_fee}"
+                f'Modifying Broker Default Fees:  Maker Fee {_data["data"]["maker_fee_rate"]}->{maker_fee},Taker Fee {_data["data"]["taker_fee_rate"]}->{taker_fee}'
             )
         set_broker_default_rate(maker_fee, taker_fee)
     except Exception as e:
@@ -125,9 +124,9 @@ def update_user_rate_base_volume():
                                 }
                                 data.append(_ret)
                                 user_fee.create_update_user_fee_data(_ret)
-                            status = True
+                            # status = True
                         except:
-                            status = False
+                            # status = False
                             print(
                                 f"New rates are not smaller than old rates: {_account_id}"
                             )

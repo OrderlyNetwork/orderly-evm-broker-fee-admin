@@ -1,17 +1,19 @@
-from utils.mylogging import setup_logging
 import sys
+
 import scheduler
 from controllers.fee import (
+    init_broker_fees,
+    fetch_broker_default_rate,
     update_broker_default_fee,
     update_user_special_rate,
     update_user_rate_base_volume,
-    init_broker_fees,
-    fetch_broker_default_rate,
 )
 from utils.myconfig import ConfigLoader
+from utils.mylogging import setup_logging
 
 config = ConfigLoader.load_config()
 logger = setup_logging()
+
 
 def show_help():
     help_text = """
@@ -27,7 +29,6 @@ def show_help():
 
 
 if __name__ == "__main__":
-    
     args = sys.argv[1:]
     if len(args) == 0:
         show_help()
@@ -40,7 +41,7 @@ if __name__ == "__main__":
     elif args[0] == "update-user-rate-base-volume":
         if config["rate"]["startup_batch_update_fee"]:
             logger.info(
-                "For the first time, the broker user rate is updated based on the yaml configuration startup_batch_update_fee=True"
+                "For the first time, the broker user rate is updated based on the yaml configuration startup_batch_update_fee: true"
             )
             init_broker_fees()
             update_user_rate_base_volume()

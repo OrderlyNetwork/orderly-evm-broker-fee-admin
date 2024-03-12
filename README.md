@@ -1,7 +1,7 @@
 # Orderly EVM Broker Fee Admin
-[![Python version](https://img.shields.io/badge/Python-3.10-bright)](https://www.python.org/downloads/)
-[![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://binance-connector.readthedocs.io/en/stable/)
-[![Code Style](https://img.shields.io/badge/code_style-black-black)](https://black.readthedocs.io/en/stable/)
+[![Python version](https://img.shields.io/badge/Python-3.10-bright)](https://www.python.org/downloads)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://orderly.network/docs/build-on-evm/building-on-evm)
+[![Code Style](https://img.shields.io/badge/code_style-black-black)](https://black.readthedocs.io/en/stable)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This is a lightweight library that works as a tool to configure broker default rates and user's rates.
@@ -19,12 +19,12 @@ pip install -r requirements.txt
 
 ## Configurations
 
-- account_id, api_key, api_secret: broker admin acount information
+- account_id, api_key, api_secret: Broker admin account information
 - orderly_endpoint: API URL
 - statistical_days: The latest rate period is calculated based on volume, with 30 representing the last 30 days
 - fee_tier: The broker's self-defined rate tier
 - special_rate_whitelists: When configuring a special rate for a user, the account_id of the user is recorded. Users of this list will not automatically update rates
-- startup_batch_update_fee: True: The user rate is automatically updated when the service is started, otherwise it is periodically executed every day
+- startup_batch_update_fee: Configure the `true` means the user rate is automatically updated when the service is started, otherwise it is periodically executed every day
 
 Usage examples:
 ```
@@ -79,7 +79,7 @@ rate:
 ## Usage method
 1. Help information
 ```shell 
-    python3 app/main.py
+python3 app/main.py
 
     Help Information(Option,Parameters):
     - update-broker-default-fee <maker fee> <taker fee> 
@@ -91,33 +91,33 @@ rate:
 ```
 2. Update broker default rates
 ```shell
-    python3 app/main.py update-broker-default-fee 0.001 0.006
+python3 app/main.py update-broker-default-fee 0.001 0.006
 ```
 3. Update special rates for user
 ```shell
-python3 app/main.py update-user-special-rate 0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741338d3b6  0.0001 0.0003
+python3 app/main.py update-user-special-rate 0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741338d3b6 0.0001 0.0003
 ```
 4. Start the automatic update user's rates task
 ```shell 
-#Every day at 00:10
+#Every day at 01:00
 python3 app/main.py update-user-rate-base-volume
 ```
 ## Container deployment
 
-1. Clone Codes
-```
-git clone git@github.com:OrderlyNetwork/orderly-evm-broker-fee-admin.git
+1. Clone codes
+```shell
+git clone git@github.com:woonetwork/orderly-evm-broker-fee-admin.git
 ```
 2. Build a local image
-```
+```shell
 cd orderly-evm-broker-fee-admin
-docker  build . -t broker_fee_admin:latest
-docker run  --name broker_fee_admin -d -it -v /local/directory/data:/data/data broker_fee_admin:latest
+docker build . -t broker_fee_admin:latest
+docker run --name broker_fee_admin -d -it -v /local/directory/data:/data/data broker_fee_admin:latest
 ```
 After the container is created, the data, config, and logs directories are created in the /local/directory/data directory. Please first configure `data/config/broker.yaml`.
 
 3. Start the container
-```
+```shell
 docker start broker_fee_admin
 ```
 4. Others
@@ -188,8 +188,8 @@ rate:
 ```
 6. How to view the help information of the Orderly EVM Broker Fee Admin tool?
 
-```python
-    python3 app/main.py
+```shell
+python3 app/main.py
 
     Help Information(Option,Parameters):
     - update-broker-default-fee <maker fee> <taker fee> 
@@ -201,11 +201,11 @@ rate:
 ```
 7. How to modify the broker’s default rate?
 
-```python 
+```shell 
 python3 app/main.py update-broker-default-fee 0.001 0.006
 ```
 8. How to add a special user fixed rate (after it is added successfully, its rate will not be updated regularly based on  volume)?
-```python 
+```shell 
 python3 app/main.py update-user-special-rate 0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741378d3b7 0.0001 0.0003
 
 After the fixed rate configuration user account_id is added, the user account_id is recorded in the configuration file config/broker.yaml
@@ -230,7 +230,7 @@ It is recommended to run this task no less than 00:10 UTC every day (this logic 
 
 Default startup_batch_update_fee: True, this logic will be executed first when the service start.
 
-```python
+```shell
 python3 app/main.py update-user-rate-base-volume
 ```
 11. Are there any special precautions when operating the Orderly EVM Broker Fee Admin tool?
