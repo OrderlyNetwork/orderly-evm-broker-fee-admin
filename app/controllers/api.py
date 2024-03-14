@@ -6,8 +6,8 @@ from utils.mylogging import setup_logging
 from utils.rest import sign_request
 from utils.util import get_report_days
 
-logger = setup_logging()
 config = ConfigLoader.load_config()
+logger = setup_logging()
 
 
 def get_broker_users_fees(count=1):
@@ -41,7 +41,6 @@ def set_broker_default_rate(maker_fee_rate, taker_fee_rate):
 
 
 def get_broker_users_volumes(count):
-
     start_time, end_time = get_report_days()
     _payload = {
         "start_date": start_time,
@@ -68,7 +67,6 @@ def get_tier(volume):
                 / 100,
             }
             return tier_found
-            break
 
 
 def reset_user_fee_default(account_ids):
@@ -80,11 +78,11 @@ def reset_user_fee_default(account_ids):
 
 
 def set_broker_user_fee(_data):
-
     data = {}
     _tier1 = config["rate"]["fee_tier"][0]
     _tier1_maker_fee = Decimal(_tier1["maker_fee"].replace("%", "")) / 100
     _tier1_taker_fee = Decimal(_tier1["taker_fee"].replace("%", "")) / 100
+    _ok_count, _fail_count = 0, 0
     if _data:
         for _da in _data:
             _futures_maker_fee_rate = _da["futures_maker_fee_rate"]
@@ -93,8 +91,6 @@ def set_broker_user_fee(_data):
             if _fee_key not in data.keys():
                 data[_fee_key] = []
             data[_fee_key].append(_da["account_id"])
-        _ok_count = 0
-        _fail_count = 0
         for _fk, _fv in data.items():
             maker_fee_rate = Decimal(_fk.split(":")[0])
             taker_fee_rate = Decimal(_fk.split(":")[1])
@@ -132,7 +128,7 @@ def set_broker_user_fee(_data):
                         f"Set Broker User's Fee Failed: {_fk} - {_payload} - {str(e)} "
                     )
                 time.sleep(2)
-        logger.info(
-            f"Set Broker User's Status - success: {_ok_count}, failed: {_fail_count}"
-        )
-        return _ok_count, _fail_count
+    logger.info(
+        f"Set Broker User's Status - success: {_ok_count}, failed: {_fail_count}"
+    )
+    return _ok_count, _fail_count

@@ -12,9 +12,10 @@ from controllers.api import (
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
 from utils.pd import BrokerFee
+from utils.util import send_alert_message
 
-logger = setup_logging()
 config = ConfigLoader.load_config()
+logger = setup_logging()
 
 
 def init_broker_fees():
@@ -143,7 +144,8 @@ def update_user_rate_base_volume():
         time.sleep(2)
 
     # 5.request the batch fee interface: data
-    set_broker_user_fee(data)
+    ok_count, fail_count = set_broker_user_fee(data)
+    send_alert_message(ok_count, fail_count)
     logger.info("Broker user rate update completed")
 
 

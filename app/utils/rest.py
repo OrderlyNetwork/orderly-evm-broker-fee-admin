@@ -13,9 +13,9 @@ from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
 from utils.util import get_timestamp, clean_none_value, ClientError, ServerError
 
+config = ConfigLoader.load_config()
 logger = setup_logging()
 
-config = ConfigLoader.load_config()
 session = requests.Session()
 api_key = config["common"]["api_key"]
 api_secret = config["common"]["api_secret"]
