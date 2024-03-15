@@ -84,7 +84,7 @@ python3 app/main.py
     Help Information(Option,Parameters):
     - update-broker-default-fee <maker fee> <taker fee> 
     - update-user-special-rate <account_id> <maker fee> <taker fee> 
-    - update-user-rate-base-volume
+    - update-user-rate
     Description: The fee unit uses percentiles, e.g. 0.0003 = 0.03%
     
     Examples: python3 app/main.py update-broker-default-fee 0.0003 0.0005
@@ -100,7 +100,7 @@ python3 app/main.py update-user-special-rate 0x918ce3f57ce4b2a3920d4a81c772f8a26
 4. Start the automatic update user's rates task
 ```shell 
 #Every day at 01:00
-python3 app/main.py update-user-rate-base-volume
+python3 app/main.py update-user-rate
 ```
 ## Container deployment
 
@@ -194,7 +194,7 @@ python3 app/main.py
     Help Information(Option,Parameters):
     - update-broker-default-fee <maker fee> <taker fee> 
     - update-user-special-rate <account_id> <maker fee> <taker fee> 
-    - update-user-rate-base-volume
+    - update-user-rate
     Description: The fee unit uses percentiles, e.g. 0.0003 = 0.03%
     
     Examples: python3 app/main.py update-broker-default-fee 0.0003 0.0005
@@ -231,7 +231,7 @@ It is recommended to run this task no less than 00:10 UTC every day (this logic 
 Default startup_batch_update_fee: True, this logic will be executed first when the service start.
 
 ```shell
-python3 app/main.py update-user-rate-base-volume
+python3 app/main.py update-user-rate
 ```
 11. Are there any special precautions when operating the Orderly EVM Broker Fee Admin tool?
 - When the project is running, data/logs and data/data will be automatically created in the project directory, which are used to record operation logs and user rate-related data respectively.

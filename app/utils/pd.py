@@ -13,6 +13,8 @@ class PandasCSVHandler:
             self.filename = "data/data/broker_user_fee.csv"
         elif self._type == "broker_user_volume":
             self.filename = "data/data/broker_user_volume.csv"
+        elif self._type == "staking_user_bal":
+            self.filename = "data/data/staking_user_bal.csv"
         self.read_csv()
 
     def read_csv(self):
@@ -38,10 +40,17 @@ class PandasCSVHandler:
                     "address",
                     "update_time",
                 ]
+            elif self._type == "staking_user_bal":
+                headers = [
+                    "account_id",
+                    "bal",
+                    "address",
+                    "update_time",
+                ]
             pd.DataFrame(columns=headers).to_csv(self.filename, index=False)
         self.df = pd.read_csv(
             self.filename,
-            dtype={"futures_maker_fee_rate": str, "futures_taker_fee_rate": str},
+            dtype={"futures_maker_fee_rate": str, "futures_taker_fee_rate": str, "bal": str},
         )
 
     def write_csv(self):
@@ -111,3 +120,30 @@ class BrokerFee:
 
     def remove_user_fee_data(self):
         os.remove(self.pd.filename)
+
+
+class StakingBal:
+    def __init__(self, _type="staking_user_bal"):
+        self._type = _type
+        self.pd = PandasCSVHandler(_type=self._type)
+
+    def query_data_by_address(self, query_str):
+        query_result = self.pd.df.query(f'address == "{query_str}"')
+        if query_result.empty:
+            return pd.DataFrame()
+        return query_result
+
+    def create_update_user_bal_data(self, rec):
+        rec["update_time"] = get_now_datetime()
+        query_result = self.query_data_by_address(rec["address"])
+        if not query_result.empty:
+            updates_needed = False
+            for key, value in rec.items():
+                if key == "bal" and query_result[key].iloc[0] != value:
+                    self.pd.update_data_if_needed(query_result, key, value)
+                    updates_needed = True
+
+            if updates_needed:
+                self.pd.write_csv()
+        else:
+            self.pd.write_json_to_csv(rec)

@@ -5,7 +5,7 @@ from controllers.fee import (
     fetch_broker_default_rate,
     update_broker_default_fee,
     update_user_special_rate,
-    update_rate_base_volume,
+    update_user_rate,
 )
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
@@ -19,7 +19,7 @@ def show_help():
     Help Information(Option,Parameters):
     - update-broker-default-fee <maker fee> <taker fee> 
     - update-user-special-rate <account_id> <maker fee> <taker fee> 
-    - update-user-rate-base-volume
+    - update-user-rate
     Description: The fee unit uses percentiles, e.g. 0.0003 = 0.03%
     
     Examples: python3 app/main.py update-broker-default-fee 0.0003 0.0005
@@ -37,12 +37,12 @@ if __name__ == "__main__":
         update_user_special_rate(args[1], args[2], args[3])
     elif args[0] == "get_broker_default_rate":
         fetch_broker_default_rate()
-    elif args[0] == "update-user-rate-base-volume":
+    elif args[0] == "update-user-rate":
         if config["rate"]["startup_batch_update_fee"]:
             logger.info(
                 "For the first time, the broker user rate is updated based on the yaml configuration startup_batch_update_fee: true"
             )
-            update_rate_base_volume()
+            update_user_rate()
         scheduler.run()
     else:
         logger.info("Invalid arguments.")

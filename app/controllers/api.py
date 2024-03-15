@@ -3,11 +3,21 @@ from decimal import Decimal
 
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
-from utils.rest import sign_request
+from utils.rest import sign_request, send_request
 from utils.util import get_report_days
 
 config = ConfigLoader.load_config()
 logger = setup_logging()
+
+
+def get_account(address, broker_id):
+    url = f"/v1/get_account?address={address}&broker_id={broker_id}"
+    try:
+        data = send_request("GET", f"{url}")
+    except Exception as e:
+        data = None
+        logger.error(f"Get Account URL Failed: {url} - {e}")
+    return data
 
 
 def get_broker_users_fees(count=1):
@@ -53,20 +63,32 @@ def get_broker_users_volumes(count):
     return _volumes
 
 
-def get_tier(volume):
+def get_user_fee_rates(volume, staking_bal):
     _tiers = config["rate"]["fee_tier"]
-    # tier_found = None
-    for tier in _tiers:
-        if tier["volume_min"] <= volume and (
-            tier["volume_max"] is None or volume < tier["volume_max"]
+    tier_found = -1
+    user_fee_rates = {}
+    for _tier in _tiers:
+        maker_fee_rate = Decimal(_tier["maker_fee"].replace("%", "")) / 100
+        taker_fee_rate = Decimal(_tier["taker_fee"].replace("%", "")) / 100
+        if _tier["volume_min"] <= volume and (
+            _tier["volume_max"] is None or volume < _tier["volume_max"]
         ):
-            tier_found = {
-                "futures_maker_fee_rate": Decimal(tier["maker_fee"].replace("%", ""))
-                / 100,
-                "futures_taker_fee_rate": Decimal(tier["taker_fee"].replace("%", ""))
-                / 100,
-            }
-            return tier_found
+            if tier_found < int(_tier["tier"]):
+                tier_found = int(_tier["tier"])
+                user_fee_rates = {"futures_maker_fee_rate": maker_fee_rate, "futures_taker_fee_rate": taker_fee_rate}
+
+        if _tier["staking_bal_min"] is not None:
+            if _tier["staking_bal_min"] <= staking_bal and (
+                _tier["staking_bal_max"] is None or staking_bal < _tier["staking_bal_max"]
+            ):
+                if tier_found < int(_tier["tier"]):
+                    tier_found = int(_tier["tier"])
+                    user_fee_rates = {"futures_maker_fee_rate": maker_fee_rate, "futures_taker_fee_rate": taker_fee_rate}
+
+    if tier_found == -1 or not user_fee_rates:
+        logger.info(f"get user fee rates failed, volume: {volume}, staking_bal: {staking_bal}")
+
+    return user_fee_rates
 
 
 def reset_user_fee_default(account_ids):
@@ -99,7 +121,7 @@ def set_broker_user_fee(_data):
             batch_size = 100
             
             for i in range(0, len(account_ids), batch_size):
-                batch_ids = account_ids[i:i+batch_size]
+                batch_ids = account_ids[i:i + batch_size]
                 _payload = {
                     "account_ids": batch_ids,
                     "maker_fee_rate": str(maker_fee_rate),

@@ -17,9 +17,9 @@ def handle_signal(signum, frame):
 
 def run():
     try:
-        logger.info("update-user-rate-base-volume task startup")
+        logger.info("update-user-rate task startup")
         scheduler.add_job(
-            fee.update_rate_base_volume, trigger="cron", hour="01", minute="00"
+            fee.update_user_rate, trigger="cron", hour="01", minute="00"
         )
         scheduler.start()
         signal.signal(signal.SIGINT, handle_signal)

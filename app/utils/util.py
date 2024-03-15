@@ -50,8 +50,7 @@ def clean_none_value(d):
     return out
 
 
-def send_alert_message(ok_count, fail_count):
-    alert_message = f'WOOFi Pro {config["common"]["network"]} - update-user-rate-base-volume, ok_count: {ok_count}, fail_count: {fail_count}'
+def send_alert_message(alert_message):
     Bot(config["common"]["telegram_bot_token"]).send_message(
         config["common"]["telegram_chat_id"], alert_message, reply_to_message_id=config["common"]["telegram_message_id"]
     )
