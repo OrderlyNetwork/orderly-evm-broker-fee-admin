@@ -3,7 +3,17 @@ common:
   api_key: ed25519:...
   api_secret: ed25519:...j
   orderly_endpoint: https://api-evm.orderly.network
+  orderly_network: Mainnet
   statistical_days: 30
+  telegram_bot_token: ''
+  telegram_chat_id: ''
+  telegram_message_id: ''
+  slack_bot_token: ''
+  slack_channel: ''
+arbitrum:
+  rpc_url: https://arb1.arbitrum.io/rpc
+  multicall3_address: '0x'
+  staking_manager_address: '0x'
 rate:
   fee_tier:
   - maker_fee: 0.03%
