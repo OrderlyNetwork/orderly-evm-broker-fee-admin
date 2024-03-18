@@ -75,7 +75,11 @@ def get_user_fee_rates(volume, staking_bal):
         ):
             if tier_found < int(_tier["tier"]):
                 tier_found = int(_tier["tier"])
-                user_fee_rates = {"futures_maker_fee_rate": maker_fee_rate, "futures_taker_fee_rate": taker_fee_rate}
+                user_fee_rates = {
+                    "futures_maker_fee_rate": maker_fee_rate,
+                    "futures_taker_fee_rate": taker_fee_rate,
+                    "tier": _tier["tier"],
+                }
 
         if _tier["staking_bal_min"] is not None:
             if _tier["staking_bal_min"] <= staking_bal and (
@@ -83,10 +87,15 @@ def get_user_fee_rates(volume, staking_bal):
             ):
                 if tier_found < int(_tier["tier"]):
                     tier_found = int(_tier["tier"])
-                    user_fee_rates = {"futures_maker_fee_rate": maker_fee_rate, "futures_taker_fee_rate": taker_fee_rate}
+                    user_fee_rates = {
+                        "futures_maker_fee_rate": maker_fee_rate,
+                        "futures_taker_fee_rate": taker_fee_rate,
+                        "tier": _tier["tier"],
+                    }
 
     if tier_found == -1 or not user_fee_rates:
         logger.info(f"get user fee rates failed, volume: {volume}, staking_bal: {staking_bal}")
+        return None
 
     return user_fee_rates
 

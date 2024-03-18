@@ -1,3 +1,4 @@
+import datetime
 import time
 from decimal import Decimal
 
@@ -149,11 +150,17 @@ def update_user_rates():
         time.sleep(2)
 
     special_rate_whitelists = config["rate"]["special_rate_whitelists"]
+    tier_count = {_tier["tier"]: 0 for _tier in config["rate"]["fee_tier"]}
     data = []
     for _account_id, _row in account_id2row.items():
         _address = _row["address"]
         _user_fee = get_user_fee_rates(_row["perp_volume"], _row["staking_bal"])
+        if not _user_fee:
+            alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_user_fee_rates, _address: {_address}, perp_volume: {_row["perp_volume"]}, staking_bal: {_row["staking_bal"]}'
+            send_alert_message(alert_message)
+            break
         if _account_id not in special_rate_whitelists:
+            tier_count[_user_fee["tier"]] += 1
             _new_futures_maker_fee_rate = Decimal(_user_fee["futures_maker_fee_rate"])
             _new_futures_taker_fee_rate = Decimal(_user_fee["futures_taker_fee_rate"])
             old_user_fee = user_fee.pd.query_data(_account_id)
@@ -195,8 +202,17 @@ def update_user_rates():
                 user_fee.create_update_user_fee_data(_ret)
 
     ok_count, fail_count = set_broker_user_fee(data)
+
     alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - update_user_rates, ok_count: {ok_count}, fail_count: {fail_count}'
     send_alert_message(alert_message)
+
+    report_message = f'WOOFi Pro {config["common"]["orderly_network"]} Tier Report {datetime.date.today().strftime("%Y-%m-%d")}\n\n'
+    for tier, count in tier_count.items():
+        report_message += f"tier {tier}: {count}\n"
+    report_message.rstrip("\n")
+    send_alert_message(report_message)
+
+    logger.info(report_message)
     logger.info("Broker user rate update completed")
 
 
