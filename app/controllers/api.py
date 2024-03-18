@@ -127,7 +127,7 @@ def set_broker_user_fee(_data):
             taker_fee_rate = Decimal(_fk.split(":")[1])
             account_ids = _fv
 
-            batch_size = 100
+            batch_size = 350
             
             for i in range(0, len(account_ids), batch_size):
                 batch_ids = account_ids[i:i + batch_size]

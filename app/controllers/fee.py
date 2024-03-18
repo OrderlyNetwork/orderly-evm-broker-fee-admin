@@ -15,7 +15,7 @@ from controllers.evm import get_staking_bals
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
 from utils.pd import BrokerFee, StakingBal
-from utils.util import send_alert_message
+from utils.util import send_message
 
 config = ConfigLoader.load_config()
 logger = setup_logging()
@@ -29,7 +29,7 @@ def init_broker_fees():
         data = get_broker_users_fees(_count)
         if not data or not data.get("data"):
             alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_broker_users_fees failed, _count: {_count}'
-            send_alert_message(alert_message)
+            send_message(alert_message)
             break
         if not data["data"].get("rows"):
             break
@@ -56,7 +56,7 @@ def init_staking_bals():
                     if not data or (not data.get("data") and data.get("message", "") != "account does not exist"):
                         retry -= 1
                         alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_account failed, address: {_bal["address"]}, retry: {retry}'
-                        send_alert_message(alert_message)
+                        send_message(alert_message)
                         continue
                     else:
                         break
@@ -130,7 +130,7 @@ def update_user_rates():
         _data = get_broker_users_volumes(_count)
         if not _data or not _data.get("data"):
             alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_broker_users_volumes failed, _count: {_count}'
-            send_alert_message(alert_message)
+            send_message(alert_message)
             break
         if not _data["data"].get("rows"):
             break
@@ -157,7 +157,7 @@ def update_user_rates():
         _user_fee = get_user_fee_rates(_row["perp_volume"], _row["staking_bal"])
         if not _user_fee:
             alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_user_fee_rates, _address: {_address}, perp_volume: {_row["perp_volume"]}, staking_bal: {_row["staking_bal"]}'
-            send_alert_message(alert_message)
+            send_message(alert_message)
             break
         if _account_id not in special_rate_whitelists:
             tier_count[_user_fee["tier"]] += 1
@@ -204,13 +204,13 @@ def update_user_rates():
     ok_count, fail_count = set_broker_user_fee(data)
 
     alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - update_user_rates, ok_count: {ok_count}, fail_count: {fail_count}'
-    send_alert_message(alert_message)
+    send_message(alert_message)
 
     report_message = f'WOOFi Pro {config["common"]["orderly_network"]} Tier Report {datetime.date.today().strftime("%Y-%m-%d")}\n\n'
     for tier, count in tier_count.items():
         report_message += f"tier {tier}: {count}\n"
     report_message.rstrip("\n")
-    send_alert_message(report_message)
+    send_message(report_message)
 
     logger.info(report_message)
     logger.info("Broker user rate update completed")
