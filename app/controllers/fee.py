@@ -118,9 +118,9 @@ def update_user_rates():
     _count = 1
     user_fee = BrokerFee(_type="broker_user_fee")
     staking_bal = StakingBal(_type="staking_user_bal")
-    account_id2row = {}
+    account_id2data = {}
     for _row in staking_bal.pd.df.itertuples():
-        account_id2row[_row.account_id] = {
+        account_id2data[_row.account_id] = {
             "staking_bal": Decimal(_row.bal),
             "perp_volume": 0,
             "address": _row.address,
@@ -137,10 +137,10 @@ def update_user_rates():
         if _data:
             for _row in _data["data"]["rows"]:
                 _account_id = _row["account_id"]
-                if _account_id in account_id2row:
-                    account_id2row[_account_id]["perp_volume"] = _row["perp_volume"]
+                if _account_id in account_id2data:
+                    account_id2data[_account_id]["perp_volume"] = _row["perp_volume"]
                 else:
-                    account_id2row[_account_id] = {
+                    account_id2data[_account_id] = {
                         "staking_bal": 0,
                         "perp_volume": _row["perp_volume"],
                         "address": _row["address"],
@@ -149,14 +149,21 @@ def update_user_rates():
         _count += 1
         time.sleep(2)
 
+    account_id2address = {_row.account_id: _row.address for _row in user_fee.pd.df.itertuples()}
+    for _account_id, _data in account_id2data.items():
+        if _account_id not in account_id2address:
+            account_id2address[_account_id] = _data["address"]
+
     special_rate_whitelists = config["rate"]["special_rate_whitelists"]
     tier_count = {_tier["tier"]: 0 for _tier in config["rate"]["fee_tier"]}
     data = []
-    for _account_id, _row in account_id2row.items():
-        _address = _row["address"]
-        _user_fee = get_user_fee_rates(_row["perp_volume"], _row["staking_bal"])
+    for _account_id, _address in account_id2address.items():
+        perp_volume = account_id2data.get(_account_id, {}).get("perp_volume", 0)
+        staking_bal = account_id2data.get(_account_id, {}).get("staking_bal", 0)
+
+        _user_fee = get_user_fee_rates(perp_volume, staking_bal)
         if not _user_fee:
-            alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_user_fee_rates, _address: {_address}, perp_volume: {_row["perp_volume"]}, staking_bal: {_row["staking_bal"]}'
+            alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_user_fee_rates, _address: {_address}, perp_volume: {perp_volume}, staking_bal: {staking_bal}'
             send_message(alert_message)
             break
         if _account_id not in special_rate_whitelists:

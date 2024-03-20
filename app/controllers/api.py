@@ -127,7 +127,7 @@ def set_broker_user_fee(_data):
             taker_fee_rate = Decimal(_fk.split(":")[1])
             account_ids = _fv
 
-            batch_size = 350
+            batch_size = 480
             
             for i in range(0, len(account_ids), batch_size):
                 batch_ids = account_ids[i:i + batch_size]
@@ -137,15 +137,15 @@ def set_broker_user_fee(_data):
                     "taker_fee_rate": str(taker_fee_rate),
                 }
                 try:
-                    if (
-                        maker_fee_rate == _tier1_maker_fee
-                        or taker_fee_rate == _tier1_taker_fee
-                    ):
-                        _reset_fee = reset_user_fee_default(batch_ids)
-                        if not _reset_fee["success"]:
-                            logger.error(
-                                f"Failed to reset user rates account_ ids - {batch_ids}"
-                            )
+                    # if (
+                    #     maker_fee_rate == _tier1_maker_fee
+                    #     or taker_fee_rate == _tier1_taker_fee
+                    # ):
+                    #     _reset_fee = reset_user_fee_default(batch_ids)
+                    #     if not _reset_fee["success"]:
+                    #         logger.error(
+                    #             f"Failed to reset user rates account_ ids - {batch_ids}"
+                    #         )
                     _update_fee = sign_request(
                         "POST", "/v1/broker/fee_rate/set", payload=_payload
                     )
