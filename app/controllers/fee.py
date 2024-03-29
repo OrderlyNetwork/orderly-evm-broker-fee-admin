@@ -68,7 +68,7 @@ def init_staking_bals():
             staking_bal.create_update_user_bal_data({
                 "account_id": account_id,
                 "bal": _bal["bal"],
-                "address": _bal["address"].lower(),
+                "address": _bal["address"],
             })
 
 

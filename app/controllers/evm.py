@@ -46,6 +46,6 @@ def get_staking_bals():
     end_time = time.time()
     logger.info(f"user staking balances retrieval successful, elapsed_time: {end_time - start_time}s")
     return [{
-        "address": user,
+        "address": user.lower(),
         "bal": str((Decimal(woo_bals[i]) + Decimal(mp_bals[i])) / Decimal(1e18)),
     } for i, user in enumerate(users)]
