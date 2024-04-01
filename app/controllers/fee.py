@@ -25,6 +25,7 @@ def init_broker_fees():
     # 每次启动，将当前Broker所有用户费率配置情况更新到本地数据库
     _count = 1
     broker_fee = BrokerFee(_type="broker_user_fee")
+    address2fee_rate = {}
     while True:
         data = get_broker_users_fees(_count)
         if not data or not data.get("data"):
@@ -36,14 +37,33 @@ def init_broker_fees():
         if data:
             for _data in data["data"]["rows"]:
                 print(_data)
+                address2fee_rate[_data["address"]] = {
+                    "futures_maker_fee_rate": _data["maker_fee_rate"],
+                    "futures_taker_fee_rate": _data["taker_fee_rate"],
+                }
                 broker_fee.create_update_user_fee_data(_data, delete_flag=True)
         _count += 1
         time.sleep(2)
+
+    verify_broker_fees_data(address2fee_rate)
+
+
+def verify_broker_fees_data(address2fee_rate):
+    broker_fee = BrokerFee(_type="broker_user_fee")
+    for _row in broker_fee.pd.df.itertuples():
+        fee_rate = address2fee_rate[_row.address]
+        if fee_rate["futures_maker_fee_rate"] != _row.futures_maker_fee_rate:
+            alert_message = f'WOOFi Pro Debug - address: {_row.address}, _row.futures_maker_fee_rate: {_row.futures_maker_fee_rate}, futures_maker_fee_rate: {fee_rate["futures_maker_fee_rate"]}'
+            send_message(alert_message)
+        if fee_rate["futures_taker_fee_rate"] != _row.futures_taker_fee_rate:
+            alert_message = f'WOOFi Pro Debug - address: {_row.address}, _row.futures_taker_fee_rate: {_row.futures_taker_fee_rate}, futures_taker_fee_rate: {fee_rate["futures_taker_fee_rate"]}'
+            send_message(alert_message)
 
 
 def init_staking_bals():
     staking_bals = get_staking_bals()
     if staking_bals:
+        address2bal = {}
         staking_bal = StakingBal(_type="staking_user_bal")
         broker_id = "woofi_pro"
         for _bal in staking_bals:
@@ -65,11 +85,31 @@ def init_staking_bals():
                 account_id = data["data"]["account_id"]
             else:
                 account_id = query_result["account_id"].iloc[0]
+            address2bal[_bal["address"]] = _bal["bal"]
             staking_bal.create_update_user_bal_data({
                 "account_id": account_id,
                 "bal": _bal["bal"],
                 "address": _bal["address"],
             })
+
+        for _row in staking_bal.pd.df.itertuples():
+            if _row.address not in address2bal:
+                staking_bal.create_update_user_bal_data({
+                    "account_id": _row.account_id,
+                    "bal": "0",
+                    "address": _row.address,
+                })
+
+        verify_staking_bal_data(address2bal)
+
+
+def verify_staking_bal_data(address2bal):
+    staking_bal = StakingBal(_type="staking_user_bal")
+    for _row in staking_bal.pd.df.itertuples():
+        bal = address2bal.get(_row.address, "0")
+        if _row.bal != bal:
+            alert_message = f"WOOFi Pro Debug - address: {_row.address}, _row.bal: {_row.bal}, bal: {bal}"
+            send_message(alert_message)
 
 
 def fetch_broker_default_rate():

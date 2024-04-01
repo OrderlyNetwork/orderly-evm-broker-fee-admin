@@ -17,8 +17,8 @@ logger = setup_logging()
 def show_help():
     help_text = """
     Help Information(Option,Parameters):
-    - update-broker-default-fee <maker fee> <taker fee> 
-    - update-user-special-rate <account_id> <maker fee> <taker fee> 
+    - update-broker-default-fee <maker fee> <taker fee>
+    - update-user-special-rate <account_id> <maker fee> <taker fee>
     - update-user-rate
     Description: The fee unit uses percentiles, e.g. 0.0003 = 0.03%
     
