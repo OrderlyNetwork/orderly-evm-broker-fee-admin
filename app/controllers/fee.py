@@ -100,10 +100,10 @@ def init_staking_bals():
                     "address": _row.address,
                 })
 
-        verify_staking_bal_data(address2bal)
+        verify_staking_bals_data(address2bal)
 
 
-def verify_staking_bal_data(address2bal):
+def verify_staking_bals_data(address2bal):
     staking_bal = StakingBal(_type="staking_user_bal")
     for _row in staking_bal.pd.df.itertuples():
         bal = address2bal.get(_row.address, "0")
