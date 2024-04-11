@@ -81,8 +81,10 @@ def init_staking_bals():
                     else:
                         break
                 if data.get("message", "") == "account does not exist":
+                    logger.info(f'address: {_bal["address"]} account does not exist')
                     continue
                 account_id = data["data"]["account_id"]
+                logger.info(f'address: {_bal["address"]}, get account_id: {account_id}')
             else:
                 account_id = query_result["account_id"].iloc[0]
             address2bal[_bal["address"]] = _bal["bal"]

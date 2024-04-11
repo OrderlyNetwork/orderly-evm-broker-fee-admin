@@ -119,9 +119,9 @@ def send_request(http_method, url_path, payload=None):
     url = orderly_endpoint + url_path
     params = clean_none_value({"url": url, "params": payload})
     response = _dispatch_request(http_method, params)
-    logger.info(
-        f"raw response from server: {response.text}, elapsed_time: {response.elapsed.total_seconds()}s"
-    )
+    # logger.info(
+    #     f"raw response from server: {response.text}, elapsed_time: {response.elapsed.total_seconds()}s"
+    # )
     _handle_rest_exception(response)
 
     try:
