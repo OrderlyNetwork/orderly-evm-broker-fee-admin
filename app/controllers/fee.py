@@ -50,14 +50,29 @@ def init_broker_fees():
 
 def verify_broker_fees_data(address2fee_rate):
     broker_fee = BrokerFee(_type="broker_user_fee")
-    for _row in broker_fee.pd.df.itertuples():
-        fee_rate = address2fee_rate[_row.address]
-        if fee_rate["futures_maker_fee_rate"] != _row.futures_maker_fee_rate:
-            alert_message = f'WOOFi Pro Debug - address: {_row.address}, _row.futures_maker_fee_rate: {_row.futures_maker_fee_rate}, futures_maker_fee_rate: {fee_rate["futures_maker_fee_rate"]}'
+    for _address, _fee_rate in address2fee_rate.items():
+        query_result = broker_fee.pd.query_data_by_address(_address)
+        if query_result.empty:
+            alert_message = f'WOOFi Pro Debug - address: {_address}, futures_maker_fee_rate: {_fee_rate["futures_maker_fee_rate"]}, futures_taker_fee_rate: {_fee_rate["futures_taker_fee_rate"]} not updated'
             send_message(alert_message)
-        if fee_rate["futures_taker_fee_rate"] != _row.futures_taker_fee_rate:
-            alert_message = f'WOOFi Pro Debug - address: {_row.address}, _row.futures_taker_fee_rate: {_row.futures_taker_fee_rate}, futures_taker_fee_rate: {fee_rate["futures_taker_fee_rate"]}'
-            send_message(alert_message)
+        else:
+            futures_maker_fee_rate = query_result["futures_maker_fee_rate"].iloc[0]
+            futures_taker_fee_rate = query_result["futures_taker_fee_rate"].iloc[0]
+            if _fee_rate["futures_maker_fee_rate"] != futures_maker_fee_rate:
+                alert_message = f'WOOFi Pro Debug - address: {_address}, csv futures_maker_fee_rate: {futures_maker_fee_rate}, actual futures_maker_fee_rate: {_fee_rate["futures_maker_fee_rate"]}'
+                send_message(alert_message)
+            if _fee_rate["futures_taker_fee_rate"] != futures_taker_fee_rate:
+                alert_message = f'WOOFi Pro Debug - address: {_address}, csv futures_taker_fee_rate: {futures_taker_fee_rate}, actual futures_taker_fee_rate: {_fee_rate["futures_taker_fee_rate"]}'
+                send_message(alert_message)
+
+    # for _row in broker_fee.pd.df.itertuples():
+    #     fee_rate = address2fee_rate[_row.address]
+    #     if fee_rate["futures_maker_fee_rate"] != _row.futures_maker_fee_rate:
+    #         alert_message = f'WOOFi Pro Debug - address: {_row.address}, _row.futures_maker_fee_rate: {_row.futures_maker_fee_rate}, futures_maker_fee_rate: {fee_rate["futures_maker_fee_rate"]}'
+    #         send_message(alert_message)
+    #     if fee_rate["futures_taker_fee_rate"] != _row.futures_taker_fee_rate:
+    #         alert_message = f'WOOFi Pro Debug - address: {_row.address}, _row.futures_taker_fee_rate: {_row.futures_taker_fee_rate}, futures_taker_fee_rate: {fee_rate["futures_taker_fee_rate"]}'
+    #         send_message(alert_message)
 
 
 def init_staking_bals():
@@ -67,7 +82,7 @@ def init_staking_bals():
         staking_bal = StakingBal(_type="staking_user_bal")
         broker_id = "woofi_pro"
         for _bal in staking_bals:
-            query_result = staking_bal.query_data_by_address(_bal["address"])
+            query_result = staking_bal.pd.query_data_by_address(_bal["address"])
             if query_result.empty:
                 retry = 3
                 while retry > 0:
@@ -107,11 +122,22 @@ def init_staking_bals():
 
 def verify_staking_bals_data(address2bal):
     staking_bal = StakingBal(_type="staking_user_bal")
-    for _row in staking_bal.pd.df.itertuples():
-        bal = address2bal.get(_row.address, "0")
-        if _row.bal != bal:
-            alert_message = f"WOOFi Pro Debug - address: {_row.address}, _row.bal: {_row.bal}, bal: {bal}"
+    for _address, _bal in address2bal.items():
+        query_result = staking_bal.pd.query_data_by_address(_address)
+        if query_result.empty:
+            alert_message = f'WOOFi Pro Debug - address: {_address}, bal: {_bal} not updated'
             send_message(alert_message)
+        else:
+            bal = query_result["bal"].iloc[0]
+            if _bal != bal:
+                alert_message = f'WOOFi Pro Debug - address: {_address}, csv bal: {bal}, actual bal: {_bal}'
+                send_message(alert_message)
+
+    # for _row in staking_bal.pd.df.itertuples():
+    #     bal = address2bal.get(_row.address, "0")
+    #     if _row.bal != bal:
+    #         alert_message = f"WOOFi Pro Debug - address: {_row.address}, _row.bal: {_row.bal}, bal: {bal}"
+    #         send_message(alert_message)
 
 
 def fetch_broker_default_rate():

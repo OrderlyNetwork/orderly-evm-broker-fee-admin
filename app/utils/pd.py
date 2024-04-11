@@ -62,6 +62,12 @@ class PandasCSVHandler:
             return pd.DataFrame()
         return query_result
 
+    def query_data_by_address(self, query_str):
+        query_result = self.df.query(f'address == "{query_str}"')
+        if query_result.empty:
+            return pd.DataFrame()
+        return query_result
+
     def update_data_if_needed(self, query_result, column, new_value):
         rows_to_update = query_result[column] != new_value
         if rows_to_update.any():
@@ -127,15 +133,9 @@ class StakingBal:
         self._type = _type
         self.pd = PandasCSVHandler(_type=self._type)
 
-    def query_data_by_address(self, query_str):
-        query_result = self.pd.df.query(f'address == "{query_str}"')
-        if query_result.empty:
-            return pd.DataFrame()
-        return query_result
-
     def create_update_user_bal_data(self, rec):
         rec["update_time"] = get_now_datetime()
-        query_result = self.query_data_by_address(rec["address"])
+        query_result = self.pd.query_data_by_address(rec["address"])
         if not query_result.empty:
             updates_needed = False
             for key, value in rec.items():
