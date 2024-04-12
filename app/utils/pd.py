@@ -132,9 +132,14 @@ class StakingBal:
     def __init__(self, _type="staking_user_bal"):
         self._type = _type
         self.pd = PandasCSVHandler(_type=self._type)
+        self.flag = True
 
-    def create_update_user_bal_data(self, rec):
+    def create_update_user_bal_data(self, rec, delete_flag=False):
         rec["update_time"] = get_now_datetime()
+        if delete_flag and self.flag:
+            self.remove_user_bal_data()
+            self.pd = PandasCSVHandler(_type=self._type)
+            self.flag = False
         query_result = self.pd.query_data_by_address(rec["address"])
         if not query_result.empty:
             updates_needed = False
@@ -147,3 +152,6 @@ class StakingBal:
                 self.pd.write_csv()
         else:
             self.pd.write_json_to_csv(rec)
+
+    def remove_user_bal_data(self):
+        os.remove(self.pd.filename)
