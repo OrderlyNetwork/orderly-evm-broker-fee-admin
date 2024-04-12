@@ -36,7 +36,7 @@ def init_broker_fees():
             break
         if data:
             for _data in data["data"]["rows"]:
-                print(_data)
+                logger.info(_data)
                 address2fee_rate[_data["address"]] = {
                     "futures_maker_fee_rate": _data["maker_fee_rate"],
                     "futures_taker_fee_rate": _data["taker_fee_rate"],
@@ -54,19 +54,16 @@ def verify_broker_fees_data(address2fee_rate, caller_func):
         query_result = broker_fee.pd.query_data_by_address(_address)
         if query_result.empty:
             alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, futures_maker_fee_rate: {_fee_rate["futures_maker_fee_rate"]}, futures_taker_fee_rate: {_fee_rate["futures_taker_fee_rate"]} not updated'
-            send_message(alert_message)
-            time.sleep(0.5)
+            logger.info(alert_message)
         else:
             futures_maker_fee_rate = query_result["futures_maker_fee_rate"].iloc[0]
             futures_taker_fee_rate = query_result["futures_taker_fee_rate"].iloc[0]
             if _fee_rate["futures_maker_fee_rate"] != futures_maker_fee_rate:
                 alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, csv futures_maker_fee_rate: {futures_maker_fee_rate}, actual futures_maker_fee_rate: {_fee_rate["futures_maker_fee_rate"]}'
-                send_message(alert_message)
-                time.sleep(0.5)
+                logger.info(alert_message)
             if _fee_rate["futures_taker_fee_rate"] != futures_taker_fee_rate:
                 alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, csv futures_taker_fee_rate: {futures_taker_fee_rate}, actual futures_taker_fee_rate: {_fee_rate["futures_taker_fee_rate"]}'
-                send_message(alert_message)
-                time.sleep(0.5)
+                logger.info(alert_message)
 
 
 def init_staking_bals():
@@ -120,14 +117,12 @@ def verify_staking_bals_data(address2bal):
         query_result = staking_bal.pd.query_data_by_address(_address)
         if query_result.empty:
             alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - address: {_address}, bal: {_bal} not updated'
-            send_message(alert_message)
-            time.sleep(0.5)
+            logger.info(alert_message)
         else:
             bal = query_result["bal"].iloc[0]
             if _bal != bal:
                 alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - address: {_address}, csv bal: {bal}, actual bal: {_bal}'
-                send_message(alert_message)
-                time.sleep(0.5)
+                logger.info(alert_message)
 
 
 def fetch_broker_default_rate():
@@ -215,6 +210,7 @@ def update_user_rates():
     special_rate_whitelists = config["rate"]["special_rate_whitelists"]
     tier_count = {_tier["tier"]: 0 for _tier in config["rate"]["fee_tier"]}
     data = []
+    need_to_log = []
     for _account_id, _address in account_id2address.items():
         perp_volume = account_id2data.get(_account_id, {}).get("perp_volume", 0)
         staking_bal = account_id2data.get(_account_id, {}).get("staking_bal", 0)
@@ -251,6 +247,7 @@ def update_user_rates():
                             "address": _address,
                         }
                         data.append(_ret)
+                        need_to_log.append({"account_id": _account_id, "address": _address, "new_futures_maker_fee_rate": _new_futures_maker_fee_rate, "old_futures_maker_fee_rate": _old_futures_maker_fee_rate, "new_futures_taker_fee_rate": _new_futures_taker_fee_rate, "old_futures_taker_fee_rate": _old_futures_taker_fee_rate})
                         user_fee.create_update_user_fee_data(_ret)
                 except:
                     print(
@@ -264,12 +261,22 @@ def update_user_rates():
                     "address": _address,
                 }
                 data.append(_ret)
+                need_to_log.append({"account_id": _account_id, "address": _address, "new_futures_maker_fee_rate": _new_futures_maker_fee_rate, "old_futures_maker_fee_rate": None, "new_futures_taker_fee_rate": _new_futures_taker_fee_rate, "old_futures_taker_fee_rate": None})
                 user_fee.create_update_user_fee_data(_ret)
 
-    address2fee_rate = {item["address"]: item for item in data}
+    address2fee_rate = {
+        _data["address"]: {
+            "futures_maker_fee_rate": str(_data["futures_maker_fee_rate"]),
+            "futures_taker_fee_rate": str(_data["futures_taker_fee_rate"]),
+        }
+        for _data in data
+    }
     verify_broker_fees_data(address2fee_rate, update_user_rates.__name__)
 
     ok_count, fail_count = set_broker_user_fee(data)
+    logger.info(f"---------------log start---------------")
+    logger.info(f"need_to_log: {need_to_log}")
+    logger.info(f"---------------log end---------------")
 
     alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - update_user_rates, ok_count: {ok_count}, fail_count: {fail_count}'
     send_message(alert_message)
