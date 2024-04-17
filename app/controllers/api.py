@@ -13,7 +13,7 @@ logger = setup_logging()
 def get_account(address, broker_id):
     url = f"/v1/get_account?address={address}&broker_id={broker_id}"
     try:
-        data = send_request("GET", f"{url}")
+        data = send_request("GET", f"{url}", ignore_rest_exception=True)
     except Exception as e:
         data = None
         logger.error(f"Get Account URL Failed: {url} - {e}")

@@ -42,12 +42,12 @@ def get_uuid():
     return str(uuid.uuid4())
 
 
-def clean_none_value(d):
-    out = {}
-    for k in d.keys():
-        if d[k] is not None:
-            out[k] = d[k]
-    return out
+def clean_none_value(input_dict):
+    output_dict = {}
+    for k in input_dict.keys():
+        if input_dict[k] is not None:
+            output_dict[k] = input_dict[k]
+    return output_dict
 
 
 def send_message(alert_message):

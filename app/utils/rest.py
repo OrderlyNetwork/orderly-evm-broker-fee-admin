@@ -113,7 +113,7 @@ def sign_request(http_method, url_path, payload=None):
     return send_request(http_method, url_path, payload)
 
 
-def send_request(http_method, url_path, payload=None):
+def send_request(http_method, url_path, payload=None, ignore_rest_exception=False):
     if payload is None:
         payload = {}
     url = orderly_endpoint + url_path
@@ -122,7 +122,8 @@ def send_request(http_method, url_path, payload=None):
     # logger.info(
     #     f"raw response from server: {response.text}, elapsed_time: {response.elapsed.total_seconds()}s"
     # )
-    _handle_rest_exception(response)
+    if not ignore_rest_exception:
+        _handle_rest_exception(response)
 
     try:
         data = json.loads(response.text, parse_float=decimal.Decimal)

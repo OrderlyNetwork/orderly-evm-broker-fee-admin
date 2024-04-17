@@ -26,7 +26,7 @@ def init_broker_fees():
     # 每次启动，将当前Broker所有用户费率配置情况更新到本地数据库
     _count = 1
     broker_fee = BrokerFee(_type="broker_user_fee")
-    address2fee_rate = {}
+    # address2fee_rate = {}
     while True:
         data = get_broker_users_fees(_count)
         if not data or not data.get("data"):
@@ -38,33 +38,33 @@ def init_broker_fees():
         if data:
             for _data in data["data"]["rows"]:
                 logger.info(_data)
-                address2fee_rate[_data["address"]] = {
-                    "futures_maker_fee_rate": _data["maker_fee_rate"],
-                    "futures_taker_fee_rate": _data["taker_fee_rate"],
-                }
+                # address2fee_rate[_data["address"]] = {
+                #     "futures_maker_fee_rate": _data["maker_fee_rate"],
+                #     "futures_taker_fee_rate": _data["taker_fee_rate"],
+                # }
                 broker_fee.create_update_user_fee_data(_data, delete_flag=True)
         _count += 1
         time.sleep(2)
 
-    verify_broker_fees_data(address2fee_rate, init_broker_fees.__name__)
+    # verify_broker_fees_data(address2fee_rate, init_broker_fees.__name__)
 
 
-def verify_broker_fees_data(address2fee_rate, caller_func):
-    broker_fee = BrokerFee(_type="broker_user_fee")
-    for _address, _fee_rate in address2fee_rate.items():
-        query_result = broker_fee.pd.query_data_by_address(_address)
-        if query_result.empty:
-            alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, futures_maker_fee_rate: {_fee_rate["futures_maker_fee_rate"]}, futures_taker_fee_rate: {_fee_rate["futures_taker_fee_rate"]} not updated'
-            logger.info(alert_message)
-        else:
-            futures_maker_fee_rate = query_result["futures_maker_fee_rate"].iloc[0]
-            futures_taker_fee_rate = query_result["futures_taker_fee_rate"].iloc[0]
-            if _fee_rate["futures_maker_fee_rate"] != futures_maker_fee_rate:
-                alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, csv futures_maker_fee_rate: {futures_maker_fee_rate}, actual futures_maker_fee_rate: {_fee_rate["futures_maker_fee_rate"]}'
-                logger.info(alert_message)
-            if _fee_rate["futures_taker_fee_rate"] != futures_taker_fee_rate:
-                alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, csv futures_taker_fee_rate: {futures_taker_fee_rate}, actual futures_taker_fee_rate: {_fee_rate["futures_taker_fee_rate"]}'
-                logger.info(alert_message)
+# def verify_broker_fees_data(address2fee_rate, caller_func):
+#     broker_fee = BrokerFee(_type="broker_user_fee")
+#     for _address, _fee_rate in address2fee_rate.items():
+#         query_result = broker_fee.pd.query_data_by_address(_address)
+#         if query_result.empty:
+#             alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, futures_maker_fee_rate: {_fee_rate["futures_maker_fee_rate"]}, futures_taker_fee_rate: {_fee_rate["futures_taker_fee_rate"]} not updated'
+#             logger.info(alert_message)
+#         else:
+#             futures_maker_fee_rate = query_result["futures_maker_fee_rate"].iloc[0]
+#             futures_taker_fee_rate = query_result["futures_taker_fee_rate"].iloc[0]
+#             if _fee_rate["futures_maker_fee_rate"] != futures_maker_fee_rate:
+#                 alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, csv futures_maker_fee_rate: {futures_maker_fee_rate}, actual futures_maker_fee_rate: {_fee_rate["futures_maker_fee_rate"]}'
+#                 logger.info(alert_message)
+#             if _fee_rate["futures_taker_fee_rate"] != futures_taker_fee_rate:
+#                 alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - caller_func: {caller_func}, address: {_address}, csv futures_taker_fee_rate: {futures_taker_fee_rate}, actual futures_taker_fee_rate: {_fee_rate["futures_taker_fee_rate"]}'
+#                 logger.info(alert_message)
 
 
 def init_staking_bals():
@@ -72,7 +72,7 @@ def init_staking_bals():
     if staking_bals:
         address2bal = {}
         staking_bal = StakingBal(_type="staking_user_bal")
-        verify_address2account_id = {}
+        # verify_address2account_id = {}
         address2account_id = JsonHandler("address2account_id")
         broker_id = "woofi_pro"
         for _bal in staking_bals:
@@ -85,16 +85,20 @@ def init_staking_bals():
                     if not data or (not data.get("data") and data.get("message", "") != "account does not exist"):
                         retry -= 1
                         alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_account failed, address: {_bal["address"]}, retry: {retry}'
-                        send_message(alert_message)
+                        logger.info(alert_message)
                         continue
                     else:
                         break
+                if data is None:
+                    alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - get_account failed, address: {_bal["address"]}, retry: {retry}'
+                    send_message(alert_message)
+                    continue
                 if data.get("message", "") == "account does not exist":
                     logger.info(f'address: {_bal["address"]} account does not exist')
                     continue
                 account_id = data["data"]["account_id"]
                 address2account_id.update_content(_bal["address"], account_id)
-                verify_address2account_id[_bal["address"]] = account_id
+                # verify_address2account_id[_bal["address"]] = account_id
                 logger.info(f'address: {_bal["address"]}, get account_id: {account_id}')
             address2bal[_bal["address"]] = _bal["bal"]
             staking_bal.create_update_user_bal_data({
@@ -105,31 +109,31 @@ def init_staking_bals():
 
         address2account_id.write_json()
 
-        verify_address2account_id_write(verify_address2account_id)
+        # verify_address2account_id_write(verify_address2account_id)
 
-        verify_staking_bals_data(address2bal)
-
-
-def verify_address2account_id_write(verify_address2account_id):
-    address2account_id = JsonHandler("address2account_id")
-    for _address, _account_id in verify_address2account_id.items():
-        if address2account_id.get_content(_address) != _account_id:
-            alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - address: {_address}, account_id: {_account_id} not updated'
-            logger.info(alert_message)
+        # verify_staking_bals_data(address2bal)
 
 
-def verify_staking_bals_data(address2bal):
-    staking_bal = StakingBal(_type="staking_user_bal")
-    for _address, _bal in address2bal.items():
-        query_result = staking_bal.pd.query_data_by_address(_address)
-        if query_result.empty:
-            alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - address: {_address}, bal: {_bal} not updated'
-            logger.info(alert_message)
-        else:
-            bal = query_result["bal"].iloc[0]
-            if _bal != bal:
-                alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - address: {_address}, csv bal: {bal}, actual bal: {_bal}'
-                logger.info(alert_message)
+# def verify_address2account_id_write(verify_address2account_id):
+#     address2account_id = JsonHandler("address2account_id")
+#     for _address, _account_id in verify_address2account_id.items():
+#         if address2account_id.get_content(_address) != _account_id:
+#             alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - address: {_address}, account_id: {_account_id} not updated'
+#             logger.info(alert_message)
+
+
+# def verify_staking_bals_data(address2bal):
+#     staking_bal = StakingBal(_type="staking_user_bal")
+#     for _address, _bal in address2bal.items():
+#         query_result = staking_bal.pd.query_data_by_address(_address)
+#         if query_result.empty:
+#             alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - address: {_address}, bal: {_bal} not updated'
+#             logger.info(alert_message)
+#         else:
+#             bal = query_result["bal"].iloc[0]
+#             if _bal != bal:
+#                 alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} Debug - address: {_address}, csv bal: {bal}, actual bal: {_bal}'
+#                 logger.info(alert_message)
 
 
 def fetch_broker_default_rate():
@@ -268,14 +272,14 @@ def update_user_rates():
                 data.append(_ret)
                 user_fee.create_update_user_fee_data(_ret)
 
-    address2fee_rate = {
-        _data["address"]: {
-            "futures_maker_fee_rate": str(_data["futures_maker_fee_rate"]),
-            "futures_taker_fee_rate": str(_data["futures_taker_fee_rate"]),
-        }
-        for _data in data
-    }
-    verify_broker_fees_data(address2fee_rate, update_user_rates.__name__)
+    # address2fee_rate = {
+    #     _data["address"]: {
+    #         "futures_maker_fee_rate": str(_data["futures_maker_fee_rate"]),
+    #         "futures_taker_fee_rate": str(_data["futures_taker_fee_rate"]),
+    #     }
+    #     for _data in data
+    # }
+    # verify_broker_fees_data(address2fee_rate, update_user_rates.__name__)
 
     ok_count, fail_count = set_broker_user_fee(data)
 
