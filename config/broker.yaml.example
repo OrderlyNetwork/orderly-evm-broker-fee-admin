@@ -10,6 +10,11 @@ common:
   telegram_message_id: ''
   slack_bot_token: ''
   slack_channel: ''
+redis:
+  host: localhost
+  port: 6379
+  db: 0
+  password: ''
 arbitrum:
   rpc_url: https://arb1.arbitrum.io/rpc
   multicall3_address: '0x'

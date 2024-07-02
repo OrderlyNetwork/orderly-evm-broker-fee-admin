@@ -16,10 +16,12 @@ from utils.cache import JsonHandler
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
 from utils.pd import BrokerFee, StakingBal
-from utils.util import send_message
+from utils.util import get_redis_client, send_message
 
 config = ConfigLoader.load_config()
 logger = setup_logging()
+
+REDIS_HASH_GRACE_PERIOD = "woofi_pro:hash_grace_period"
 
 
 def init_broker_fees():
@@ -220,8 +222,51 @@ def update_user_rates():
 
     special_rate_whitelists = config["rate"]["special_rate_whitelists"]
     tier_count = {_tier["tier"]: 0 for _tier in config["rate"]["fee_tier"]}
+
+    redis_client = get_redis_client()
+    # NOTE: 指定account_id升到tier6
+    grace_period_tier6_account_ids = []
+    grace_period_tier6_data = []
+    tier_6 = next(tier for tier in config["rate"]["fee_tier"] if tier["tier"] == "6")
+    tier_6_maker_fee = Decimal(tier_6["maker_fee"].replace("%", "")) / 100
+    tier_6_taker_fee = Decimal(tier_6["taker_fee"].replace("%", "")) / 100
+
+    cur_timestamp = int(time.time())
+    for _account_id, _start_timestamp in redis_client.hgetall(REDIS_HASH_GRACE_PERIOD).items():
+        if int(_start_timestamp) <= cur_timestamp < int(_start_timestamp) + 30 * 86400:
+            if _account_id not in grace_period_tier6_account_ids:
+                grace_period_tier6_account_ids.append(_account_id)
+
+            _ret = {
+                "account_id": _account_id,
+                "futures_maker_fee_rate": tier_6_maker_fee,
+                "futures_taker_fee_rate": tier_6_taker_fee,
+            }
+            old_user_fee = user_fee.pd.query_data(_account_id)
+            if not old_user_fee.empty:
+                _old_futures_maker_fee_rate = Decimal(old_user_fee.futures_maker_fee_rate.values[0])
+                _old_futures_taker_fee_rate = Decimal(old_user_fee.futures_taker_fee_rate.values[0])
+                if (
+                        tier_6_maker_fee
+                        != _old_futures_maker_fee_rate
+                        or tier_6_taker_fee
+                        != _old_futures_taker_fee_rate
+                ):
+                    grace_period_tier6_data.append(_ret)
+            else:
+                grace_period_tier6_data.append(_ret)
+
+            tier_count["6"] += 1
+
+    ok_count, fail_count = set_broker_user_fee(grace_period_tier6_data)
+    total_ok_count = ok_count
+    total_fail_count = fail_count
+
     data = []
     for _account_id, _address in account_id2address.items():
+        if _account_id in grace_period_tier6_account_ids:
+            continue
+
         perp_volume = account_id2data.get(_account_id, {}).get("perp_volume", 0)
         staking_bal = account_id2data.get(_account_id, {}).get("staking_bal", 0)
 
@@ -282,8 +327,10 @@ def update_user_rates():
     # verify_broker_fees_data(address2fee_rate, update_user_rates.__name__)
 
     ok_count, fail_count = set_broker_user_fee(data)
+    total_ok_count += ok_count
+    total_fail_count += fail_count
 
-    alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - update_user_rates, ok_count: {ok_count}, fail_count: {fail_count}'
+    alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - update_user_rates, ok_count: {total_ok_count}, fail_count: {total_fail_count}'
     send_message(alert_message)
 
     report_message = f'WOOFi Pro {config["common"]["orderly_network"]} Tier Report {datetime.date.today().strftime("%Y-%m-%d")}\n\n'
