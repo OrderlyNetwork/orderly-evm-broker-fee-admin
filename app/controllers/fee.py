@@ -18,6 +18,8 @@ from utils.mylogging import setup_logging
 from utils.pd import BrokerFee, StakingBal
 from utils.util import send_message
 
+from utils.util import get_redis_client
+
 config = ConfigLoader.load_config()
 logger = setup_logging()
 
@@ -218,6 +220,7 @@ def update_user_rates():
         if _account_id not in account_id2address:
             account_id2address[_account_id] = _data["address"]
 
+    redis_client = get_redis_client()
     special_rate_whitelists = config["rate"]["special_rate_whitelists"]
     tier_count = {_tier["tier"]: 0 for _tier in config["rate"]["fee_tier"]}
     data = []
@@ -272,6 +275,7 @@ def update_user_rates():
                 data.append(_ret)
                 user_fee.create_update_user_fee_data(_ret)
 
+            # 更新数据
     # address2fee_rate = {
     #     _data["address"]: {
     #         "futures_maker_fee_rate": str(_data["futures_maker_fee_rate"]),
@@ -282,9 +286,29 @@ def update_user_rates():
     # verify_broker_fees_data(address2fee_rate, update_user_rates.__name__)
 
     ok_count, fail_count = set_broker_user_fee(data)
-
     alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - update_user_rates, ok_count: {ok_count}, fail_count: {fail_count}'
     send_message(alert_message)
+
+    #指定account_id升到tier6
+    update_tier6_data = []
+    tier_6 = next(tier for tier in config["rate"]["fee_tier"] if tier["tier"] == '6')
+    tier_6_maker_fee = Decimal(tier_6["maker_fee"].strip('%')) / 100
+    tier_6_taker_fee = Decimal(tier_6["taker_fee"].strip('%')) / 100
+
+    current_timestamp = int(time.time())
+    for _account_id, redis_timestamp in redis_client.hgetall("account_timestamps").items():
+        redis_timestamp = int(redis_timestamp)
+        if current_timestamp < redis_timestamp + 30 * 24 * 60 * 60:
+            _ret = {
+                "account_id": _account_id,
+                "futures_maker_fee_rate": tier_6_maker_fee,
+                "futures_taker_fee_rate": tier_6_taker_fee,
+            }
+            tier_count["6"] += 1
+            update_tier6_data.append(_ret)
+    ok_count, fail_count = set_broker_user_fee(update_tier6_data)
+
+
 
     report_message = f'WOOFi Pro {config["common"]["orderly_network"]} Tier Report {datetime.date.today().strftime("%Y-%m-%d")}\n\n'
     for tier, count in tier_count.items():
