@@ -21,7 +21,7 @@ from utils.util import get_redis_client, send_message
 config = ConfigLoader.load_config()
 logger = setup_logging()
 
-REDIS_HASH_GRACE_PERIOD = "woofi_pro:hash_grace_period"
+REDIS_HASH_GRACE_PERIOD = f'woofi_pro:hash_grace_period:{config["common"]["orderly_network"].lower()}'
 
 
 def init_broker_fees():
