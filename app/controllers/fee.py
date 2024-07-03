@@ -241,6 +241,7 @@ def update_user_rates():
                 "account_id": _account_id,
                 "futures_maker_fee_rate": tier_6_maker_fee,
                 "futures_taker_fee_rate": tier_6_taker_fee,
+                "address": account_id2address[_account_id],
             }
             old_user_fee = user_fee.pd.query_data(_account_id)
             if not old_user_fee.empty:
@@ -253,8 +254,10 @@ def update_user_rates():
                         != _old_futures_taker_fee_rate
                 ):
                     grace_period_tier6_data.append(_ret)
+                    user_fee.create_update_user_fee_data(_ret)
             else:
                 grace_period_tier6_data.append(_ret)
+                user_fee.create_update_user_fee_data(_ret)
 
             tier_count["6"] += 1
 
