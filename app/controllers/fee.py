@@ -22,6 +22,7 @@ config = ConfigLoader.load_config()
 logger = setup_logging()
 
 REDIS_HASH_GRACE_PERIOD = f'woofi_pro:hash_grace_period:{config["common"]["orderly_network"].lower()}'
+REDIS_HASH_ACCOUNT_ID2ADDRESS = f'woofi_pro:account_id2address:{config["common"]["orderly_network"].lower()}'
 
 
 def init_broker_fees():
@@ -237,11 +238,16 @@ def update_user_rates():
             if _account_id not in grace_period_tier6_account_ids:
                 grace_period_tier6_account_ids.append(_account_id)
 
+            _address = redis_client.hget(REDIS_HASH_ACCOUNT_ID2ADDRESS, _account_id)
+            if _address is None:
+                alert_message = f'WOOFi Pro {config["common"]["orderly_network"]} - grace_period_config, _account_id: {_account_id}, _address: {_address}'
+                send_message(alert_message)
+                continue
             _ret = {
                 "account_id": _account_id,
                 "futures_maker_fee_rate": tier_6_maker_fee,
                 "futures_taker_fee_rate": tier_6_taker_fee,
-                "address": account_id2address[_account_id],
+                "address": _address,
             }
             old_user_fee = user_fee.pd.query_data(_account_id)
             if not old_user_fee.empty:
