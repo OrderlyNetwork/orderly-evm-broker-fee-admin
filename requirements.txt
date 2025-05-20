@@ -8,3 +8,4 @@ apscheduler
 PyYAML
 base58
 pytest-shutil
+python-dotenv==1.1.0
