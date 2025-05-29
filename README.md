@@ -17,7 +17,7 @@ Main functions:
 
 ## Installation
 
-```bash
+```shell
 python3.10 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -216,7 +216,7 @@ rate:
 
 6. How to view the help information of the Orderly EVM Broker Fee Admin tool?
 
-```python
+```shell
     python3 app/main.py
 
     Help Information(Option,Parameters):
@@ -230,13 +230,13 @@ rate:
 
 7. How to modify the broker’s default rate?
 
-```python
+```shell
 python3 app/main.py update-broker-default-fee 0.001 0.006
 ```
 
 8. How to add a special user fixed rate (after it is added successfully, its rate will not be updated regularly based on volume)?
 
-```python
+```shell
 python3 app/main.py update-user-special-rate 0x918ce3f57ce4b2a3920d4a81c772f8a26ce30c9f34792421949d23741378d3b7 0.0001 0.0003
 
 After the fixed rate configuration user account_id is added, the user account_id is recorded in the configuration file config/broker.yaml
@@ -262,7 +262,7 @@ It is recommended to run this task no less than 00:10 UTC every day (this logic 
 
 Default startup_batch_update_fee: True, this logic will be executed first when the service start.
 
-```python
+```shell
 python3 app/main.py update-user-rate-base-volume
 ```
 
@@ -270,3 +270,21 @@ python3 app/main.py update-user-rate-base-volume
 
 - When the project is running, data/logs and data/data will be automatically created in the project directory, which are used to record operation logs and user rate-related data respectively.
 - Related operations should be performed in the same project code
+
+12. How to user private key from environment variable?
+
+You can omit sensible parameter from the broker.yaml configuration file and use environment variables instead.
+
+You can omit:
+
+- account_id
+- api_key
+- api_secret
+
+and instead write a .env file in the root directory of the project with the following content:
+
+```env
+MODE_TRADE_PUBLIC_KEY=
+MODE_TRADE_PRIVATE_KEY=
+MODE_TRADE_ACCOUNT_ID=
+```

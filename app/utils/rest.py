@@ -11,14 +11,29 @@ from utils.util import get_timestamp, cleanNoneValue, ClientError, ServerError
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
 import decimal
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = setup_logging()
 
 config = ConfigLoader.load_config()
 session = requests.Session()
-api_key = config["common"]["api_key"]
-api_secret = config["common"]["api_secret"]
-account_id = config["common"]["account_id"]
+api_key = (
+    config["common"]["api_key"]
+    if "api_key" in config["common"]
+    else os.environ.get("MODE_TRADE_PUBLIC_KEY")
+)
+api_secret = (
+    config["common"]["api_secret"]
+    if "api_secret" in config["common"]
+    else os.environ.get("MODE_TRADE_PRIVATE_KEY")
+)
+account_id = (
+    config["common"]["account_id"]
+    if "account_id" in config["common"]
+    else os.environ.get("MODE_TRADE_ACCOUNT_ID")
+)
 orderly_endpoint = config["common"]["orderly_endpoint"]
 
 
