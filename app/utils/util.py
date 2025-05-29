@@ -68,4 +68,4 @@ class ClientError(Error):
 
 class ServerError(Error):
     def __init__(self, status_code, message):
-        self.status_code = status_c
+        self.status_code = status_code
