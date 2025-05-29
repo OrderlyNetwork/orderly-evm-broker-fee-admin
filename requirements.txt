@@ -1,7 +1,7 @@
 pandas
 requests
 web3
-eth_account
+eth-account==0.13.7
 pycryptodome
 cryptography
 apscheduler
