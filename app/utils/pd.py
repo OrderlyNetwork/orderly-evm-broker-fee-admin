@@ -1,7 +1,7 @@
 import pandas as pd
-import json
-import os
+import json, os
 from utils.util import get_now_datetime
+from decimal import Decimal
 
 
 class PandasCSVHandler:
@@ -40,10 +40,7 @@ class PandasCSVHandler:
             pd.DataFrame(columns=headers).to_csv(self.filename, index=False)
         self.df = pd.read_csv(
             self.filename,
-            dtype={
-                "futures_maker_fee_rate": str,
-                "futures_taker_fee_rate": str,
-            },
+            dtype={"futures_maker_fee_rate": str, "futures_taker_fee_rate": str},
         )
 
     def write_csv(self):
@@ -59,20 +56,16 @@ class PandasCSVHandler:
         rows_to_update = query_result[column] != new_value
         if rows_to_update.any():
             self.df.loc[query_result.index[rows_to_update], column] = new_value
-            self.df.loc[query_result.index[rows_to_update], "update_time"] = (
-                get_now_datetime()
-            )
+            self.df.loc[
+                query_result.index[rows_to_update], "update_time"
+            ] = get_now_datetime()
 
     def write_json_to_csv(self, json_data):
         if isinstance(json_data, str):
             data = json.loads(json_data)
         else:
             data = json_data
-        df = (
-            pd.DataFrame([data])
-            if isinstance(data, dict)
-            else pd.DataFrame(data)
-        )
+        df = pd.DataFrame([data]) if isinstance(data, dict) else pd.DataFrame(data)
         df.to_csv(self.filename, mode="a", header=False, index=False)
 
 

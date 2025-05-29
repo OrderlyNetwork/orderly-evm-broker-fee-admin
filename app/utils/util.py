@@ -1,6 +1,4 @@
-import time
-import json
-import uuid
+import time, json, uuid
 from datetime import datetime, timedelta
 from utils.myconfig import ConfigLoader
 
@@ -51,9 +49,7 @@ class Error(Exception):
 
 
 class ClientError(Error):
-    def __init__(
-        self, status_code, error_code, error_message, header, error_data=None
-    ):
+    def __init__(self, status_code, error_code, error_message, header, error_data=None):
         # https status code
         self.status_code = status_code
         # error code returned from server
