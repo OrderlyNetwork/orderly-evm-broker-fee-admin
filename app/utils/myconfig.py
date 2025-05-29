@@ -1,10 +1,15 @@
-import yaml,shutil,os,sys
+import yaml
+import os
+import sys
 from utils.mylogging import setup_logging
+
 logger = setup_logging()
+
 
 class ConfigLoader:
     def __init__(self):
         self.init_config()
+
     def init_config():
         global config_path
         config_path = "data/config/broker.yaml"

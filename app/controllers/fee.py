@@ -9,9 +9,8 @@ from controllers.api import (
 )
 from utils.mylogging import setup_logging
 from utils.myconfig import ConfigLoader
-import scheduler
 from utils.pd import BrokerFee
-from decimal import Decimal, getcontext
+from decimal import Decimal
 
 logger = setup_logging()
 config = ConfigLoader.load_config()
@@ -19,6 +18,7 @@ config = ConfigLoader.load_config()
 
 def init_broker_fees():
     # 每次启动，将当前Broker所有用户费率配置情况更新到本地数据库
+    # Each time it starts, update the current rate configuration for all users of the Broker to the local database
     _count = 1
     broker_fee = BrokerFee(_type="broker_user_fee")
     while True:
@@ -39,7 +39,6 @@ def fetch_broker_default_rate():
 
 def update_broker_default_fee(maker_fee, taker_fee):
     url = "/v1/broker/fee_rate/default"
-    data = None
     try:
         _data = get_broker_default_rate()
         if _data:
@@ -125,9 +124,7 @@ def update_user_rate_base_volume():
                                 }
                                 data.append(_ret)
                                 user_fee.create_update_user_fee_data(_ret)
-                            status = True
-                        except:
-                            status = False
+                        except Exception:
                             print(
                                 f"New rates are not smaller than old rates: {_account_id}"
                             )

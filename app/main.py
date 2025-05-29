@@ -13,21 +13,22 @@ from utils.myconfig import ConfigLoader
 config = ConfigLoader.load_config()
 logger = setup_logging()
 
+
 def show_help():
     help_text = """
     Help Information(Option,Parameters):
-    - update-broker-default-fee <maker fee> <taker fee> 
-    - update-user-special-rate <account_id> <maker fee> <taker fee> 
+    - update-broker-default-fee <maker fee> <taker fee>
+    - update-user-special-rate <account_id> <maker fee> <taker fee>
     - update-user-rate-base-volume
     Description: The fee unit uses percentiles, e.g. 0.0003 = 0.03%
-    
+
     Examples: python3 app/main.py update-broker-default-fee 0.0003 0.0005
     """
     print(help_text)
 
 
 if __name__ == "__main__":
-    
+
     args = sys.argv[1:]
     if len(args) == 0:
         show_help()
