@@ -271,9 +271,9 @@ python3 app/main.py update-user-rate-base-volume
 - When the project is running, data/logs and data/data will be automatically created in the project directory, which are used to record operation logs and user rate-related data respectively.
 - Related operations should be performed in the same project code
 
-12. How to user private key from environment variable?
+12. How to read private key from environment variable?
 
-You can omit sensible parameter from the broker.yaml configuration file and use environment variables instead.
+You can omit sensible parameters from the broker.yaml configuration file and use environment variables instead.
 
 You can omit:
 
@@ -287,4 +287,14 @@ and instead write a .env file in the root directory of the project with the foll
 MODE_TRADE_PUBLIC_KEY=
 MODE_TRADE_PRIVATE_KEY=
 MODE_TRADE_ACCOUNT_ID=
+```
+
+13. How to update the user fee rate of the broker based on the volume not automatically?
+
+You can choose to run the command tht update the fee rate so that the command will stop execution after the update is completed.
+
+Simply add `--no-schedule`:
+
+```shell
+python3 app/main.py update-user-rate-base-volume --no-schedule
 ```

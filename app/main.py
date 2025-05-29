@@ -45,7 +45,11 @@ if __name__ == "__main__":
             )
             init_broker_fees()
             update_user_rate_base_volume()
-        scheduler.run()
+        if len(args) == 2 and args[1] == "--no-schedule":
+            logger.info("Update user rate base volume without scheduling.")
+        else:
+            logger.info("Scheduling update user rate base volume.")
+            scheduler.run()
     else:
         logger.info("Invalid arguments.")
         show_help()
