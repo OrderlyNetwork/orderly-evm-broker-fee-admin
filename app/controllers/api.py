@@ -1,12 +1,12 @@
+import time
+from decimal import Decimal
 from utils.mylogging import setup_logging
 from utils.myconfig import ConfigLoader
 from utils.util import get_report_days
-from utils.rest import _request, _sign_request
+from utils.rest import _sign_request
 
 logger = setup_logging()
 config = ConfigLoader.load_config()
-import time
-from decimal import Decimal
 
 
 def get_broker_users_fees(count=1):
@@ -31,9 +31,12 @@ def get_broker_default_rate():
 
 def set_broker_default_rate(maker_fee_rate, taker_fee_rate):
     url = "/v1/broker/fee_rate/default"
-    _payload = {"maker_fee_rate": maker_fee_rate, "taker_fee_rate": taker_fee_rate}
+    _payload = {
+        "maker_fee_rate": maker_fee_rate,
+        "taker_fee_rate": taker_fee_rate,
+    }
     try:
-        _post_data = _sign_request("POST", f"{url}", payload=_payload)
+        _sign_request("POST", f"{url}", payload=_payload)
     except Exception as e:
         logger.error(f"Get Broker Default Fee URL Failed: {url} - {e}")
     return
@@ -49,7 +52,9 @@ def get_broker_users_volumes(count):
         "page": count,
         "aggregateBy": "account",
     }
-    _volumes = _sign_request("GET", "/v1/volume/broker/daily", payload=_payload)
+    _volumes = _sign_request(
+        "GET", "/v1/volume/broker/daily", payload=_payload
+    )
     return _volumes
 
 
@@ -61,13 +66,16 @@ def get_tier(volume):
             tier["volume_max"] is None or volume < tier["volume_max"]
         ):
             tier_found = {
-                "futures_maker_fee_rate": Decimal(tier["maker_fee"].replace("%", ""))
+                "futures_maker_fee_rate": Decimal(
+                    tier["maker_fee"].replace("%", "")
+                )
                 / 100,
-                "futures_taker_fee_rate": Decimal(tier["taker_fee"].replace("%", ""))
+                "futures_taker_fee_rate": Decimal(
+                    tier["taker_fee"].replace("%", "")
+                )
                 / 100,
             }
             return tier_found
-            break
 
 
 def reset_user_fee_default(account_ids):
@@ -100,9 +108,9 @@ def set_broker_user_fee(_data):
             account_ids = _fv
 
             batch_size = 500
-            
+
             for i in range(0, len(account_ids), batch_size):
-                batch_ids = account_ids[i:i+batch_size]
+                batch_ids = account_ids[i : i + batch_size]
                 _payload = {
                     "account_ids": batch_ids,
                     "maker_fee_rate": str(maker_fee_rate),
@@ -121,7 +129,7 @@ def set_broker_user_fee(_data):
                     _update_fee = _sign_request(
                         "POST", "/v1/broker/fee_rate/set", payload=_payload
                     )
-                    if _update_fee["success"] == True:
+                    if _update_fee["success"]:
                         _ok_count += len(batch_ids)
                     else:
                         _fail_count += len(batch_ids)

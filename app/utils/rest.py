@@ -1,22 +1,39 @@
+import os
 import json
 from json import JSONDecodeError
 import requests
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from eth_account.messages import encode_typed_data
 from web3 import Web3
-import base58, base64
+import base58
+import base64
 from utils.util import get_timestamp, cleanNoneValue, ClientError, ServerError
 from utils.myconfig import ConfigLoader
 from utils.mylogging import setup_logging
 import decimal
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = setup_logging()
 
 config = ConfigLoader.load_config()
 session = requests.Session()
-api_key = config["common"]["api_key"]
-api_secret = config["common"]["api_secret"]
-account_id = config["common"]["account_id"]
+api_key = (
+    config["common"]["api_key"]
+    if "api_key" in config["common"]
+    else os.environ.get("MODE_TRADE_PUBLIC_KEY")
+)
+api_secret = (
+    config["common"]["api_secret"]
+    if "api_secret" in config["common"]
+    else os.environ.get("MODE_TRADE_PRIVATE_KEY")
+)
+account_id = (
+    config["common"]["account_id"]
+    if "account_id" in config["common"]
+    else os.environ.get("MODE_TRADE_ACCOUNT_ID")
+)
 orderly_endpoint = config["common"]["orderly_endpoint"]
 
 
@@ -54,7 +71,9 @@ def _request(http_method, url_path, payload=None):
         _payload = cleanNoneValue(payload)
         if _payload:
             if http_method == "GET" or http_method == "DELETE":
-                url_path += "?" + "&".join([f"{k}={v}" for k, v in _payload.items()])
+                url_path += "?" + "&".join(
+                    [f"{k}={v}" for k, v in _payload.items()]
+                )
                 payload = ""
             else:
                 payload = _payload
@@ -80,17 +99,15 @@ def _request(http_method, url_path, payload=None):
     return data
 
 
-def get_wallet_signature(message=None):
-    return generate_wallet_signature(wallet_secret, message=message)
-
-
 def _sign_request(http_method, url_path, payload=None):
     _payload = ""
     if payload:
         _payload = cleanNoneValue(payload)
         if _payload:
             if http_method == "GET" or http_method == "DELETE":
-                url_path += "?" + "&".join([f"{k}={v}" for k, v in _payload.items()])
+                url_path += "?" + "&".join(
+                    [f"{k}={v}" for k, v in _payload.items()]
+                )
                 _payload = ""
 
     params = {}
@@ -99,7 +116,9 @@ def _sign_request(http_method, url_path, payload=None):
     params["payload"] = payload
     params["http_method"] = http_method
     query_string = _prepare_params(params)
-    _timestamp, _signature = generate_signature(api_secret, message=query_string)
+    _timestamp, _signature = generate_signature(
+        api_secret, message=query_string
+    )
 
     session.headers.update(
         {
@@ -140,7 +159,11 @@ def send_request(http_method, url_path, payload=None):
 def _prepare_params(params: dict):
     _http_method = params["http_method"]
     _url_path = params["url_path"]
-    _payload = json.dumps(params["payload"]) if params["payload"] else params["payload"]
+    _payload = (
+        json.dumps(params["payload"])
+        if params["payload"]
+        else params["payload"]
+    )
     _params = "{0}{1}{2}".format(_http_method, _url_path, _payload)
     return _params
 
@@ -167,11 +190,17 @@ def _handle_rest_exception(response):
         try:
             err = json.loads(response.text)
         except JSONDecodeError:
-            raise ClientError(status_code, None, response.text, None, response.headers)
+            raise ClientError(
+                status_code, None, response.text, None, response.headers
+            )
         error_data = None
         if "data" in err:
             error_data = err["data"]
         raise ClientError(
-            status_code, err["error"], err["message"], response.headers, error_data
+            status_code,
+            err["error"],
+            err["message"],
+            response.headers,
+            error_data,
         )
     raise ServerError(status_code, response.text)

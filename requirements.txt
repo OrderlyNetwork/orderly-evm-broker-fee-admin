@@ -1,10 +1,11 @@
 pandas
 requests
 web3
-eth_account
+eth-account==0.13.7
 pycryptodome
 cryptography
 apscheduler
 PyYAML
 base58
 pytest-shutil
+python-dotenv==1.1.0
