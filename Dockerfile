@@ -1,7 +1,14 @@
 FROM python:3.10.11
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
 WORKDIR /data
+COPY requirements.txt ./
+RUN python -m pip install --upgrade pip && \
+    pip install -r requirements.txt ipython
+
 COPY . .
-RUN pip install --no-cache-dir -r requirements.txt -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com/simple ipython
-ENV PYTHONUNBUFFERED=1
+
 CMD ["python", "app/main.py","update-user-rate-base-volume"]
