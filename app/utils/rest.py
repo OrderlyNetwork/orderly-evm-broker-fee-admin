@@ -2,7 +2,7 @@ import json
 from json import JSONDecodeError
 import requests
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from eth_account.messages import encode_structured_data
+from eth_account.messages import encode_typed_data
 from web3 import Web3
 import base58, base64
 from utils.util import get_timestamp, cleanNoneValue, ClientError, ServerError
@@ -41,12 +41,13 @@ def generate_signature(api_secret, message=None):
 def generate_wallet_signature(wallet_secret, message=None):
     private_key = f"0x{wallet_secret}"
     _message = message
-    encoded_message = encode_structured_data(_message)
+    encoded_message = encode_typed_data(_message)
     w3 = Web3()
     signed_message = w3.eth.account.sign_message(
         encoded_message, private_key=private_key
     )
     return signed_message.signature.hex()
+
 
 def _request(http_method, url_path, payload=None):
     if payload:
